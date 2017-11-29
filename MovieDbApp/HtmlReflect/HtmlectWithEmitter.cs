@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HtmlReflect
 {
-    class HtmlectWithEmitter
+    public class HtmlectWithEmitter
     {
         private static Dictionary<Type, PropertyInfo[]> typeToProperty = new Dictionary<Type, PropertyInfo[]>();
         private static Dictionary<PropertyInfo, IHtmlAttribute> htmlAsAttribute = new Dictionary<PropertyInfo, IHtmlAttribute>();
@@ -78,7 +78,7 @@ namespace HtmlReflect
                 IHtmlAttribute htmlAttribute;
                 if (htmlAsAttribute.TryGetValue(property, out htmlAttribute))
                 {
-                    string value = propertyValueGetters[property].GetValueAsString(obj);
+                    string value = getPropertyValueGetter(property, obj).GetValueAsString(obj);
                     if (value != null)
                     {
                         result += htmlAttribute.GetHtml(property.Name, value);
@@ -120,7 +120,7 @@ namespace HtmlReflect
                     IHtmlAttribute htmlAttribute;
                     if (htmlAsAttribute.TryGetValue(property, out htmlAttribute))
                     {
-                        string value = propertyValueGetters[property].GetValueAsString(obj);
+                        string value = getPropertyValueGetter(property, obj).GetValueAsString(obj);
                         if (value != null)
                         {
                             result += htmlAttribute.GetHtmlTableLine(property.Name, value);

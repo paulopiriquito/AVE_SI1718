@@ -9,7 +9,8 @@ namespace MovHubWebApp
     public class MovHubModule : NancyModule
     {
         TheMovieDbClient movieDb = new TheMovieDbClient();
-        Htmlect html = new Htmlect();
+        HtmlectWithEmitter html = new HtmlectWithEmitter();
+        //Htmlect html = new Htmlect();
 
         public MovHubModule()
         {

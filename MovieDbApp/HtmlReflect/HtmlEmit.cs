@@ -27,10 +27,6 @@ public abstract class AbstractGetterObject : IGetter {
 
 public class HtmlEmit {
 
-   /* private static IGetter EmitGetterArray(PropertyInfo p,Object obj, Type klass)
-    {
-        return null; //(IGetter)EmitGetter(p, obj,klass, typeof(AbstractGetterArray));
-    }*/
 
     public static IGetter EmitGetter(PropertyInfo p, Object obj)
     {

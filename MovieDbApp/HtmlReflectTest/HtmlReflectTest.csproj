@@ -48,6 +48,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TestEmitVsReflect.cs" />
+    <Compile Include="NBench.cs" />
+    <Compile Include="HtmlectEmitTest.cs" />
     <Compile Include="CustomAttributeTest.cs" />
     <Compile Include="HtmlectTest.cs" />
     <Compile Include="MovHubDbTest.cs" />

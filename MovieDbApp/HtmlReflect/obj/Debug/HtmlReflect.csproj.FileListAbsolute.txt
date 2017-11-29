@@ -10,3 +10,9 @@ C:\Users\Paulo\Desktop\ISEL\AVE\Trabalho_1\HtmlReflect\obj\Debug\HtmlReflect.csp
 C:\Users\Paulo\Desktop\ISEL\AVE\Trabalho_1\HtmlReflect\obj\Debug\HtmlReflect.csproj.CoreCompileInputs.cache
 C:\Users\Paulo\Desktop\ISEL\AVE\Trabalho_1\HtmlReflect\obj\Debug\HtmlReflect.dll
 C:\Users\Paulo\Desktop\ISEL\AVE\Trabalho_1\HtmlReflect\obj\Debug\HtmlReflect.pdb
+C:\Users\JPAULO\Desktop\Nova pasta\AVE\Trabalho_1\HtmlReflect\bin\Debug\HtmlReflect.dll
+C:\Users\JPAULO\Desktop\Nova pasta\AVE\Trabalho_1\HtmlReflect\bin\Debug\HtmlReflect.pdb
+C:\Users\JPAULO\Desktop\Nova pasta\AVE\Trabalho_1\HtmlReflect\obj\Debug\HtmlReflect.csprojResolveAssemblyReference.cache
+C:\Users\JPAULO\Desktop\Nova pasta\AVE\Trabalho_1\HtmlReflect\obj\Debug\HtmlReflect.csproj.CoreCompileInputs.cache
+C:\Users\JPAULO\Desktop\Nova pasta\AVE\Trabalho_1\HtmlReflect\obj\Debug\HtmlReflect.dll
+C:\Users\JPAULO\Desktop\Nova pasta\AVE\Trabalho_1\HtmlReflect\obj\Debug\HtmlReflect.pdb
