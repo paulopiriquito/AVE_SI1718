@@ -40,11 +40,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HtmlectWithEmitter.cs" />
+    <Compile Include="HtmlectEmit.cs" />
     <Compile Include="HtmlAs.cs" />
     <Compile Include="HtmlAsAttribute.cs" />
     <Compile Include="Htmlect.cs" />
-    <Compile Include="HtmlEmit.cs" />
     <Compile Include="HtmlIgnore.cs" />
     <Compile Include="HtmlIgnoreAttribute.cs" />
     <Compile Include="IHtmlAttribute.cs" />

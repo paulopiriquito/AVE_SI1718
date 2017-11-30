@@ -4,10 +4,10 @@ namespace HtmlReflect
 {
     public interface IHtmlAttribute
     {
-        String GetHtml(String name, String value);
+        string GetHtml(string name, string value);
 
-        String GetHtmlTableHeader(String name);
+        string GetHtmlTableHeader(string name);
 
-        String GetHtmlTableLine(String name, String value);
+        string GetHtmlTableLine(string name, string value);
     }
 }

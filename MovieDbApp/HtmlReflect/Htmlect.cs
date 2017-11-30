@@ -1,20 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.NetworkInformation;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 
 namespace HtmlReflect
 {
     public class Htmlect
     {
-        private static Dictionary<Type, PropertyInfo[]> typeToProperty = new Dictionary<Type, PropertyInfo[]>();
-        private static Dictionary<PropertyInfo, IHtmlAttribute> htmlAsAttribute = new Dictionary<PropertyInfo, IHtmlAttribute>();
+        public static Dictionary<Type, PropertyInfo[]> typeToProperty = new Dictionary<Type, PropertyInfo[]>();
+        public static Dictionary<PropertyInfo, IHtmlAttribute> htmlAsAttribute = new Dictionary<PropertyInfo, IHtmlAttribute>();
 
-        private static void init_HTML_Attributes(PropertyInfo[] properties)
+        public static void HtmlAttributes_init(PropertyInfo[] properties)
         {
             foreach (var property in properties)
             {
@@ -23,7 +19,7 @@ namespace HtmlReflect
                     Attribute attribute = Attribute.GetCustomAttribute(property, typeof(HtmlIgnore));
                     if (attribute != null)
                     {
-                        htmlAsAttribute.Add(property, new HtmlIgnoreAttribute(attribute));
+                        htmlAsAttribute.Add(property, new HtmlIgnoreAttribute());
                     }
                     else
                     {
@@ -34,10 +30,10 @@ namespace HtmlReflect
             }
         }
 
-        private static PropertyInfo[] getPropertyInfoArray(Type type)
+        public static PropertyInfo[] getPropertyInfoArray(Type type)
         {
             PropertyInfo[] properties;
-            //check dictionary to prevent use of reflection
+            //check dictionary to prevent use of repeated reflection
             if (!typeToProperty.ContainsKey(type))
             {
                 properties = type.GetProperties();
@@ -56,14 +52,14 @@ namespace HtmlReflect
             var objType = obj.GetType();
             PropertyInfo[] properties = getPropertyInfoArray(objType);
 
-            init_HTML_Attributes(properties);
+            HtmlAttributes_init(properties);
             
             foreach (PropertyInfo property in properties)
             {
                 IHtmlAttribute htmlAttribute;
                 if (htmlAsAttribute.TryGetValue(property, out htmlAttribute))
                 {
-                    object value = property.GetValue(obj);
+                    var value = property.GetValue(obj);
                     if (value != null)
                     {
                         result += htmlAttribute.GetHtml(property.Name, property.GetValue(obj).ToString());
@@ -83,7 +79,7 @@ namespace HtmlReflect
             Type objType = array[0].GetType();
             PropertyInfo[] properties = getPropertyInfoArray(objType);
             
-            init_HTML_Attributes(properties);
+            HtmlAttributes_init(properties);
 
             //fill table header
             foreach (var property in properties)

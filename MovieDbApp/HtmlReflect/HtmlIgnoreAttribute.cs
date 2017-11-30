@@ -4,8 +4,9 @@ namespace HtmlReflect
 {
     public class HtmlIgnoreAttribute : IHtmlAttribute
     {
-        public HtmlIgnoreAttribute(Attribute attribute)
+        public string ToString()
         {
+            return "";
         }
 
         public string GetHtml(String name, String value)

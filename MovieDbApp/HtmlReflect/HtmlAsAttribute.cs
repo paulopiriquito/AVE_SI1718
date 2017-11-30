@@ -12,6 +12,11 @@ namespace HtmlReflect
         }
 
 
+        public string ToString()
+        {
+            return _htmlAs.AsString;
+        }
+
         public string GetHtml(String name, String value)
         {
             if (_htmlAs != null)
@@ -21,7 +26,7 @@ namespace HtmlReflect
             }
             else
             {
-                string toReturn = string.Format("<li class=\'list-group-item\'><strong>{0}</strong>:{1}</li>\n",
+                string toReturn = string.Format("<li class=\'list-group-item\'><strong>{0}</strong>:{1}</li>",
                     name, " " + value);
                 return toReturn;
             }

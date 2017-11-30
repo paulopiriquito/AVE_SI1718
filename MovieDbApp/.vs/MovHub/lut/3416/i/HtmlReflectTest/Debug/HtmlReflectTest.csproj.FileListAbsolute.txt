@@ -1,0 +1,9 @@
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\b\HtmlReflectTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\b\HtmlReflectTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\b\HtmlReflectTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\b\HtmlReflectTest\bin\Debug\HtmlReflectTest.dll
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\b\HtmlReflectTest\bin\Debug\HtmlReflectTest.pdb
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\i\HtmlReflectTest\Debug\HtmlReflectTest.csprojResolveAssemblyReference.cache
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\i\HtmlReflectTest\Debug\HtmlReflectTest.csproj.CoreCompileInputs.cache
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\i\HtmlReflectTest\Debug\HtmlReflectTest.dll
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\i\HtmlReflectTest\Debug\HtmlReflectTest.pdb

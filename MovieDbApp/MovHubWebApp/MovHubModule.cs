@@ -1,7 +1,6 @@
 ﻿using HtmlReflect;
 using Nancy;
 using MovHubDb;
-using System;
 using MovHubDb.Model;
 
 namespace MovHubWebApp
@@ -9,7 +8,7 @@ namespace MovHubWebApp
     public class MovHubModule : NancyModule
     {
         TheMovieDbClient movieDb = new TheMovieDbClient();
-        HtmlectWithEmitter html = new HtmlectWithEmitter();
+        HtmlectEmit html = new HtmlectEmit();
         //Htmlect html = new Htmlect();
 
         public MovHubModule()
