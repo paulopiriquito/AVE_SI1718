@@ -10,15 +10,51 @@ namespace HtmlReflect
 {
     public interface IHtmlGetter
     {
-        string ToHtml(object target);
-        string ToHtml(object[] targets);
+        string ToHtml(object target, PropertyInfo property, string format);
+        string GetPropertyName(PropertyInfo property);
     }
 
     public class HtmlectEmit
     {
         private static Dictionary<Type, IHtmlGetter> gettersDictionary = new Dictionary<Type, IHtmlGetter>();
-        
-        private static IHtmlGetter EmitGetter(Type klassType)
+        private static Dictionary<Type, PropertyInfo[]> TypeToProperty = new Dictionary<Type, PropertyInfo[]>();
+        private static Dictionary<PropertyInfo, HtmlAs> HtmlAsDict = new Dictionary<PropertyInfo, HtmlAs>();
+        private static List<PropertyInfo> HtmlIgnoreList = new List<PropertyInfo>();
+
+        public static void HtmlAttributes_init(PropertyInfo[] properties)
+        {
+            foreach (var property in properties)
+            {
+                if (!HtmlIgnoreList.Contains(property) && !HtmlAsDict.ContainsKey(property))
+                {
+                    HtmlIgnore ignore = (HtmlIgnore)Attribute.GetCustomAttribute(property, typeof(HtmlIgnore));
+                    if (ignore == null)
+                    {
+                        HtmlAsDict.Add(property, (HtmlAs)Attribute.GetCustomAttribute(property, typeof(HtmlAs)));
+                    }
+                    else
+                        HtmlIgnoreList.Add(property);
+                }
+            }
+        }
+
+        public static PropertyInfo[] GetPropertyInfoArray(Type type)
+        {
+            PropertyInfo[] properties;
+            //check dictionary to prevent use of repeated reflection
+            if (!TypeToProperty.ContainsKey(type))
+            {
+                properties = type.GetProperties();
+                TypeToProperty.Add(type, properties);
+            }
+            else
+            {
+                properties = TypeToProperty[type];
+            }
+            return properties;
+        }
+
+        private static IHtmlGetter EmitGetter(Type klassType, PropertyInfo p)
         {
             AssemblyName assemblyName = new AssemblyName("DynamicHtmlGetter");
             AssemblyBuilder assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
@@ -27,53 +63,102 @@ namespace HtmlReflect
             TypeBuilder typeBuilder = moduleBuilder.DefineType("HtmlGetter", TypeAttributes.Public);
             typeBuilder.AddInterfaceImplementation(typeof(IHtmlGetter));
 
-            FieldBuilder fieldBuilder = typeBuilder.DefineField("html", typeof(string), FieldAttributes.Private);
+            MethodBuilder ToHtml = typeBuilder.DefineMethod("ToHtml", MethodAttributes.Public | MethodAttributes.Static, typeof(string), new Type[] { typeof(object), typeof(PropertyInfo), typeof(string)});
+            MethodBuilder GetPropertyName = typeBuilder.DefineMethod("ToHtml", MethodAttributes.Public | MethodAttributes.Static, typeof(string), new Type[] {typeof(PropertyInfo)});
+            ILGenerator ToHtmlObjIL = ToHtml.GetILGenerator();
+            ILGenerator GetPropertyNameIL = GetPropertyName.GetILGenerator();
 
-            MethodBuilder ToHtmlObj = typeBuilder.DefineMethod("ToHtml", MethodAttributes.Public | MethodAttributes.Static, typeof(string), new Type[] { typeof(object)});
-            MethodBuilder ToHtmlArray = typeBuilder.DefineMethod("ToHtml", MethodAttributes.Public | MethodAttributes.Static, typeof(string), new Type[] { typeof(object[]) });
+            //TODO GetPropertyNameIL
 
-            ILGenerator ToHtmlObjIL = ToHtmlObj.GetILGenerator();
-            ILGenerator ToHtmlArrayIL = ToHtmlArray.GetILGenerator();
-
-            //TODO IL Emit
+            //TODO ToHtmlObjIL Emit
 
             Type t = typeBuilder.CreateType();
             object getter = Activator.CreateInstance(t);
             return (IHtmlGetter) getter;
         }
 
-        public string ToHtml(object target)
+        public string ToHtml(object source)
         {
-            Type objType = target.GetType();
-            IHtmlGetter getter;
-            if (!gettersDictionary.TryGetValue(objType, out getter))
+            StringBuilder result = new StringBuilder("<ul class=\'list-group\'>\n");
+            Type objType = source.GetType();
+            PropertyInfo[] properties = GetPropertyInfoArray(objType);
+            HtmlAttributes_init(properties);
+            foreach (var property in properties)
             {
-                getter = EmitGetter(objType);
-                if (getter != null)
+                if (!HtmlIgnoreList.Contains(property))
                 {
-                    gettersDictionary.Add(objType,getter);
-                    return getter.ToHtml(target);
+                    HtmlAs htmlAsAttribute;
+                    if (HtmlAsDict.TryGetValue(property, out htmlAsAttribute))
+                    {
+                        IHtmlGetter getter;
+                        if (!gettersDictionary.TryGetValue(objType, out getter))
+                        {
+                            getter = EmitGetter(objType, property);
+                            gettersDictionary.Add(objType, getter);
+                        }
+                        result.AppendLine(getter.ToHtml(source, property, htmlAsAttribute.Get_htmlAs()));
+                    }
                 }
-                else throw new NullReferenceException($"Failed to create IHtmlGetter of: {objType.FullName}");
             }
-            return getter.ToHtml(target);
+            return result.AppendLine("</ul>").ToString();
         }
 
-        public string ToHtml(object[] targets)
+        public string ToHtml(object[] sources)
         {
-            Type objType = targets[0].GetType();
-            IHtmlGetter getter;
-            if (!gettersDictionary.TryGetValue(objType, out getter))
+            StringBuilder result = new StringBuilder("<table class='table table-hover'>\n<thead>\n<tr>\n");
+            Type objType = sources[0].GetType();
+            PropertyInfo[] properties = GetPropertyInfoArray(objType);
+
+            HtmlAttributes_init(properties);
+
+            //fill table header
+            foreach (var property in properties)
             {
-                getter = EmitGetter(objType);
-                if (getter != null)
+                if (!HtmlIgnoreList.Contains(property))
                 {
-                    gettersDictionary.Add(objType, getter);
-                    return getter.ToHtml(targets);
+                    HtmlAs htmlAsAttribute;
+                    if (HtmlAsDict.TryGetValue(property, out htmlAsAttribute))
+                    {
+                        result.AppendLine("<th>");
+                        IHtmlGetter getter;
+                        if (!gettersDictionary.TryGetValue(objType, out getter))
+                        {
+                            getter = EmitGetter(objType, property);
+                            gettersDictionary.Add(objType, getter);
+                        }
+                        result.AppendLine(getter.GetPropertyName(property));
+                        result.AppendLine("</th>");
+                    }
                 }
-                else throw new NullReferenceException($"Failed to create IHtmlGetter of: {objType.FullName}");
             }
-            return getter.ToHtml(targets);
+            result.AppendLine("</tr>\n<thead>\n<tbody>");
+
+            //fill table lines
+            foreach (var obj in sources)
+            {
+                result.AppendLine("<tr>");
+                foreach (var property in properties)
+                {
+                    if (!HtmlIgnoreList.Contains(property))
+                    {
+                        HtmlAs htmlAsAttribute;
+                        if (HtmlAsDict.TryGetValue(property, out htmlAsAttribute))
+                        {
+                            result.AppendLine("<td>");
+                            IHtmlGetter getter;
+                            if (!gettersDictionary.TryGetValue(objType, out getter))
+                            {
+                                getter = EmitGetter(objType, property);
+                                gettersDictionary.Add(objType, getter);
+                            }
+                            result.AppendLine(getter.ToHtml(obj, property, htmlAsAttribute.Get_htmlAs()));
+                            result.AppendLine("</td>");
+                        }
+                    }
+                }
+                result.AppendLine("</tr>");
+            }
+            return result.AppendLine("</tbody>\n</table>").ToString(); ;
         }
     }
 }

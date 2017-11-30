@@ -1,13 +1,12 @@
-﻿using System;
-
-namespace HtmlReflect
+﻿namespace HtmlReflect
 {
-    public interface IHtmlAttribute
+    [System.AttributeUsage(System.AttributeTargets.Property)]
+    public abstract class IHtmlAttribute : System.Attribute
     {
-        string GetHtml(string name, string value);
+        public abstract string GetHtml(string name, string value);
 
-        string GetHtmlTableHeader(string name);
+        public abstract string GetHtmlTableHeader(string name);
 
-        string GetHtmlTableLine(string name, string value);
+        public abstract string GetHtmlTableLine(string name, string value);
     }
 }

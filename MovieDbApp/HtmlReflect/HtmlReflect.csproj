@@ -42,10 +42,8 @@
   <ItemGroup>
     <Compile Include="HtmlectEmit.cs" />
     <Compile Include="HtmlAs.cs" />
-    <Compile Include="HtmlAsAttribute.cs" />
     <Compile Include="Htmlect.cs" />
     <Compile Include="HtmlIgnore.cs" />
-    <Compile Include="HtmlIgnoreAttribute.cs" />
     <Compile Include="IHtmlAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,121 +1,129 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 
 
 namespace HtmlReflect
 {
     public class Htmlect
     {
-        public static Dictionary<Type, PropertyInfo[]> typeToProperty = new Dictionary<Type, PropertyInfo[]>();
-        public static Dictionary<PropertyInfo, IHtmlAttribute> htmlAsAttribute = new Dictionary<PropertyInfo, IHtmlAttribute>();
+        private static Dictionary<Type, PropertyInfo[]> TypeToProperty = new Dictionary<Type, PropertyInfo[]>();
+        private static Dictionary<PropertyInfo, HtmlAs> HtmlAsDict = new Dictionary<PropertyInfo, HtmlAs>();
+        private static List<PropertyInfo> HtmlIgnoreList = new List<PropertyInfo>();
 
         public static void HtmlAttributes_init(PropertyInfo[] properties)
         {
             foreach (var property in properties)
             {
-                if (!htmlAsAttribute.ContainsKey(property))
+                if (!HtmlIgnoreList.Contains(property) && !HtmlAsDict.ContainsKey(property))
                 {
-                    Attribute attribute = Attribute.GetCustomAttribute(property, typeof(HtmlIgnore));
-                    if (attribute != null)
+                    HtmlIgnore ignore = (HtmlIgnore) Attribute.GetCustomAttribute(property,typeof(HtmlIgnore));
+                    if (ignore == null)
                     {
-                        htmlAsAttribute.Add(property, new HtmlIgnoreAttribute());
+                        HtmlAsDict.Add(property, (HtmlAs) Attribute.GetCustomAttribute(property, typeof(HtmlAs)));
                     }
                     else
-                    {
-                        attribute = Attribute.GetCustomAttribute(property, typeof(HtmlAs));
-                        htmlAsAttribute.Add(property, new HtmlAsAttribute(attribute));
-                    }
+                        HtmlIgnoreList.Add(property);
                 }
             }
         }
 
-        public static PropertyInfo[] getPropertyInfoArray(Type type)
+        public static PropertyInfo[] GetPropertyInfoArray(Type type)
         {
             PropertyInfo[] properties;
             //check dictionary to prevent use of repeated reflection
-            if (!typeToProperty.ContainsKey(type))
+            if (!TypeToProperty.ContainsKey(type))
             {
                 properties = type.GetProperties();
-                typeToProperty.Add(type, properties);
+                TypeToProperty.Add(type, properties);
             }
             else
             {
-                properties = typeToProperty[type];
+                properties = TypeToProperty[type];
             }
             return properties;
         }
 
         public string ToHtml(object obj)
         {
-            var result = "<ul class=\'list-group\'>\n";
+            StringBuilder result = new StringBuilder("<ul class=\'list-group\'>\n");
             var objType = obj.GetType();
-            PropertyInfo[] properties = getPropertyInfoArray(objType);
+            PropertyInfo[] properties = GetPropertyInfoArray(objType);
 
             HtmlAttributes_init(properties);
             
             foreach (PropertyInfo property in properties)
             {
-                IHtmlAttribute htmlAttribute;
-                if (htmlAsAttribute.TryGetValue(property, out htmlAttribute))
+                if (!HtmlIgnoreList.Contains(property))
                 {
-                    var value = property.GetValue(obj);
-                    if (value != null)
+                    HtmlAs htmlAsAttribute;
+                    if (HtmlAsDict.TryGetValue(property, out htmlAsAttribute))
                     {
-                        result += htmlAttribute.GetHtml(property.Name, property.GetValue(obj).ToString());
-                    }
-                    else
-                    {
-                        result += htmlAttribute.GetHtml(property.Name, "");
+                        var value = property.GetValue(obj);
+                        if (value != null)
+                        {
+                            result.AppendLine(htmlAsAttribute.GetHtml(property.Name, property.GetValue(obj).ToString()));
+                        }
+                        else
+                        {
+                            result.AppendLine(htmlAsAttribute.GetHtml(property.Name, ""));
+                        }
                     }
                 }
             }
-            return result += "</ul>";
+            return result.AppendLine("</ul>").ToString();
         }
 
         public string ToHtml(object[] array)
         {
-            string result = "<table class='table table-hover'>\n<thead>\n<tr>\n";
+            StringBuilder result = new StringBuilder("<table class='table table-hover'>\n<thead>\n<tr>\n");
             Type objType = array[0].GetType();
-            PropertyInfo[] properties = getPropertyInfoArray(objType);
+            PropertyInfo[] properties = GetPropertyInfoArray(objType);
             
             HtmlAttributes_init(properties);
 
             //fill table header
             foreach (var property in properties)
             {
-                IHtmlAttribute htmlAttribute;
-                if (htmlAsAttribute.TryGetValue(property, out htmlAttribute))
+                if (!HtmlIgnoreList.Contains(property))
                 {
-                    result += htmlAttribute.GetHtmlTableHeader(property.Name);
+                    HtmlAs htmlAsAttribute;
+                    if (HtmlAsDict.TryGetValue(property, out htmlAsAttribute))
+                    {
+                        result.AppendLine(htmlAsAttribute.GetHtmlTableHeader(property.Name));
+                    }
                 }
             }
-            result += "</tr>\n<thead>\n<tbody>\n";
+            result.AppendLine("</tr>\n<thead>\n<tbody>");
 
             //fill table lines
             foreach (var obj in array)
             {   
-                result += "<tr>";
+                result.AppendLine("<tr>");
                 foreach(var property in properties)
                 {
-                    IHtmlAttribute htmlAttribute;
-                    if (htmlAsAttribute.TryGetValue(property, out htmlAttribute))
+                    if (!HtmlIgnoreList.Contains(property))
                     {
-                        object value = property.GetValue(obj);
-                        if (value != null)
+                        HtmlAs htmlAsAttribute;
+                        if (HtmlAsDict.TryGetValue(property, out htmlAsAttribute))
                         {
-                            result += htmlAttribute.GetHtmlTableLine(property.Name, property.GetValue(obj).ToString());
+                            object value = property.GetValue(obj);
+                            if (value != null)
+                            {
+                                result.AppendLine(htmlAsAttribute.GetHtmlTableLine(property.Name, property.GetValue(obj).ToString()));
+                            }
+                            else
+                            {
+                                result.AppendLine(htmlAsAttribute.GetHtmlTableLine(property.Name, ""));
+                            }
+
                         }
-                        else
-                        {
-                            result += htmlAttribute.GetHtmlTableLine(property.Name, "");
-                        }
-                        
                     }
                 }
-                result += "</tr>\n";
+                result.AppendLine("</tr>");
             }
-            return result += "</tbody>\n</table>";
+            return result.AppendLine("</tbody>\n</table>").ToString();
         }
 
     }
