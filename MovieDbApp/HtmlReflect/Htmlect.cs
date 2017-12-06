@@ -9,6 +9,7 @@ namespace HtmlReflect
     public class Htmlect
     {
         private static Dictionary<Type, PropertyInfo[]> TypeToProperty = new Dictionary<Type, PropertyInfo[]>();
+        
         private static Dictionary<PropertyInfo, HtmlAs> HtmlAsDict = new Dictionary<PropertyInfo, HtmlAs>();
         private static List<PropertyInfo> HtmlIgnoreList = new List<PropertyInfo>();
 
@@ -18,10 +19,14 @@ namespace HtmlReflect
             {
                 if (!HtmlIgnoreList.Contains(property) && !HtmlAsDict.ContainsKey(property))
                 {
-                    HtmlIgnore ignore = (HtmlIgnore) Attribute.GetCustomAttribute(property,typeof(HtmlIgnore));
+                    HtmlIgnore ignore = (HtmlIgnore) property.GetCustomAttribute(typeof(HtmlIgnore));
                     if (ignore == null)
                     {
-                        HtmlAsDict.Add(property, (HtmlAs) Attribute.GetCustomAttribute(property, typeof(HtmlAs)));
+                        HtmlAs htmlAs = (HtmlAs) property.GetCustomAttribute(typeof(HtmlAs));
+                        if (htmlAs != null)
+                        {
+                            HtmlAsDict.Add(property, htmlAs);
+                        }
                     }
                     else
                         HtmlIgnoreList.Add(property);
@@ -33,14 +38,10 @@ namespace HtmlReflect
         {
             PropertyInfo[] properties;
             //check dictionary to prevent use of repeated reflection
-            if (!TypeToProperty.ContainsKey(type))
+            if (!TypeToProperty.TryGetValue(type, out properties))
             {
                 properties = type.GetProperties();
                 TypeToProperty.Add(type, properties);
-            }
-            else
-            {
-                properties = TypeToProperty[type];
             }
             return properties;
         }
@@ -57,19 +58,14 @@ namespace HtmlReflect
             {
                 if (!HtmlIgnoreList.Contains(property))
                 {
-                    HtmlAs htmlAsAttribute;
-                    if (HtmlAsDict.TryGetValue(property, out htmlAsAttribute))
-                    {
-                        var value = property.GetValue(obj);
-                        if (value != null)
-                        {
-                            result.AppendLine(htmlAsAttribute.GetHtml(property.Name, property.GetValue(obj).ToString()));
-                        }
-                        else
-                        {
-                            result.AppendLine(htmlAsAttribute.GetHtml(property.Name, ""));
-                        }
-                    }
+                    string name = property.Name;
+                    var propertyvalue = property.GetValue(obj);
+                    string value = propertyvalue == null ? "" : propertyvalue.ToString();
+
+                    if (HtmlAsDict.TryGetValue(property, out var htmlAsAttribute))
+                        result.AppendLine(htmlAsAttribute.Template.Replace("{name}", name).Replace("{value}", value));
+                    else
+                        result.AppendLine($"<li class=\'list-group-item\'><strong>{name}</strong>: {value}</li>");
                 }
             }
             return result.AppendLine("</ul>").ToString();
@@ -77,55 +73,50 @@ namespace HtmlReflect
 
         public string ToHtml(object[] array)
         {
-            StringBuilder result = new StringBuilder("<table class='table table-hover'>\n<thead>\n<tr>\n");
-            Type objType = array[0].GetType();
-            PropertyInfo[] properties = GetPropertyInfoArray(objType);
-            
-            HtmlAttributes_init(properties);
-
-            //fill table header
-            foreach (var property in properties)
+            if (array != null)
             {
-                if (!HtmlIgnoreList.Contains(property))
-                {
-                    HtmlAs htmlAsAttribute;
-                    if (HtmlAsDict.TryGetValue(property, out htmlAsAttribute))
-                    {
-                        result.AppendLine(htmlAsAttribute.GetHtmlTableHeader(property.Name));
-                    }
-                }
-            }
-            result.AppendLine("</tr>\n<thead>\n<tbody>");
+                StringBuilder result = new StringBuilder("<table class='table table-hover'>\n");
+            
+                Type objType = array[0].GetType();
+                PropertyInfo[] properties = GetPropertyInfoArray(objType);
 
-            //fill table lines
-            foreach (var obj in array)
-            {   
-                result.AppendLine("<tr>");
-                foreach(var property in properties)
-                {
+                HtmlAttributes_init(properties);
+
+                //fill table header
+                result.AppendLine("<thead>\n<tr>");
+                
+                foreach (var property in properties)
                     if (!HtmlIgnoreList.Contains(property))
-                    {
-                        HtmlAs htmlAsAttribute;
-                        if (HtmlAsDict.TryGetValue(property, out htmlAsAttribute))
-                        {
-                            object value = property.GetValue(obj);
-                            if (value != null)
-                            {
-                                result.AppendLine(htmlAsAttribute.GetHtmlTableLine(property.Name, property.GetValue(obj).ToString()));
-                            }
-                            else
-                            {
-                                result.AppendLine(htmlAsAttribute.GetHtmlTableLine(property.Name, ""));
-                            }
+                        result.AppendLine("<th>"+property.Name+"</th>");
+                
+                result.AppendLine("</tr>\n<thead>\n<tbody>");
 
+                //fill table lines
+                foreach (var obj in array)
+                {
+                    result.AppendLine("<tr>");
+                    foreach (var property in properties)
+                    {
+                        if (!HtmlIgnoreList.Contains(property))
+                        {
+                            string name = property.Name;
+                            var propertyvalue = property.GetValue(obj);
+                            string value = propertyvalue == null ? "" : propertyvalue.ToString();
+                            result.AppendLine("<td>");
+                            
+                            if (HtmlAsDict.TryGetValue(property, out var htmlAsAttribute))
+                                result.AppendLine(htmlAsAttribute.Template.Replace("{name}", name).Replace("{value}", value));
+                            else
+                                result.AppendLine(value);
+                            
+                            result.AppendLine("</td>");
                         }
                     }
+                    result.AppendLine("</tr>");
                 }
-                result.AppendLine("</tr>");
+                return result.AppendLine("</tbody>\n</table>").ToString();
             }
-            return result.AppendLine("</tbody>\n</table>").ToString();
+            return ""; //TODO Procura sem resultados
         }
-
     }
-    
 }

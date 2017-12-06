@@ -44,7 +44,6 @@
     <Compile Include="HtmlAs.cs" />
     <Compile Include="Htmlect.cs" />
     <Compile Include="HtmlIgnore.cs" />
-    <Compile Include="IHtmlAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
