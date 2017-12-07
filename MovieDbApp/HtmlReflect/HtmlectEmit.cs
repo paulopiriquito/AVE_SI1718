@@ -8,163 +8,208 @@ using System.Threading.Tasks;
 
 namespace HtmlReflect
 {
-    public interface IGetter
+    public interface IHtmlGetter
     {
-        object GetValue(object target, PropertyInfo property);
+        string GetHtml(object obj);
     }
-
-    public abstract class ValueGetter : IGetter
+    public abstract class HtmlGetter : IHtmlGetter
     {
-        public abstract object GetValue(object target, PropertyInfo property);
+        public static string AsObject(object value)
+        {
+            return value == null ? "" : value.ToString();
+        }
+        public static string AsList(object[] array)
+        {
+            string str = "";
+            foreach (var obj in array)
+            {
+                str += "<tr>" + HtmlectEmit.ObjPropertiesToHtml(obj) + "</tr>";
+            }
+            return str;
+        }
+        public abstract string GetHtml(object obj);
     }
-
     public class HtmlectEmit
     {
-        private static Dictionary<PropertyInfo, IGetter> gettersDictionary = new Dictionary<PropertyInfo, IGetter>();
-        private static Dictionary<Type, PropertyInfo[]> TypeToProperty = new Dictionary<Type, PropertyInfo[]>();
+        static readonly MethodInfo formatterForArray = typeof(HtmlGetter).GetMethod("AsList", new Type[] {typeof(object[]) });
+        static readonly MethodInfo formatterForObject = typeof(HtmlGetter).GetMethod("AsObject", new Type[] {typeof(object) });
+
+        static readonly MethodInfo concat = typeof(String).GetMethod("Concat", new Type[] { typeof(string), typeof(string) });
+        static readonly MethodInfo replace = typeof(String).GetMethod("Replace", new Type[] {typeof(string), typeof(string) });
+        static readonly MethodInfo toString = typeof(object).GetMethod("ToString", new Type[] {});
+
+        private static Dictionary<Type, IHtmlGetter> htmlTypes = new Dictionary<Type, IHtmlGetter>();
+        private static Dictionary<Type, PropertyInfo[]> TypeProperties = new Dictionary<Type, PropertyInfo[]>();
         private static Dictionary<PropertyInfo, HtmlAs> HtmlAsDict = new Dictionary<PropertyInfo, HtmlAs>();
         private static List<PropertyInfo> HtmlIgnoreList = new List<PropertyInfo>();
-
+        
         public static void HtmlAttributes_init(PropertyInfo[] properties)
         {
             foreach (var property in properties)
             {
                 if (!HtmlIgnoreList.Contains(property) && !HtmlAsDict.ContainsKey(property))
                 {
-                    HtmlIgnore ignore = (HtmlIgnore)Attribute.GetCustomAttribute(property, typeof(HtmlIgnore));
+                    HtmlIgnore ignore = (HtmlIgnore)property.GetCustomAttribute(typeof(HtmlIgnore));
                     if (ignore == null)
                     {
-                        HtmlAsDict.Add(property, (HtmlAs)Attribute.GetCustomAttribute(property, typeof(HtmlAs)));
+                        HtmlAs htmlAs = (HtmlAs)property.GetCustomAttribute(typeof(HtmlAs));
+                        if (htmlAs != null)
+                        {
+                            HtmlAsDict.Add(property, htmlAs);
+                        }
                     }
                     else
                         HtmlIgnoreList.Add(property);
                 }
             }
         }
-
         public static PropertyInfo[] GetPropertyInfoArray(Type type)
         {
-            PropertyInfo[] properties;
             //check dictionary to prevent use of repeated reflection
-            if (!TypeToProperty.ContainsKey(type))
+            if (!TypeProperties.TryGetValue(type, out var properties))
             {
                 properties = type.GetProperties();
-                TypeToProperty.Add(type, properties);
-            }
-            else
-            {
-                properties = TypeToProperty[type];
+                TypeProperties.Add(type, properties);
             }
             return properties;
         }
-
-        private static IGetter EmitGetter(Type klass, PropertyInfo property)
+        public static IHtmlGetter EmitHtmlGetter(Type klassType)
         {
-            AssemblyName assemblyName = new AssemblyName("DynamicHtmlGetter");
-            AssemblyBuilder assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
-            ModuleBuilder moduleBuilder = assemblyBuilder.DefineDynamicModule(assemblyName.Name, assemblyName.Name + ".dll");
+            AssemblyName assemblyName = new AssemblyName(klassType.Name + "DynamicHtmlEmiter");
+            AssemblyBuilder assemblyBuilder =
+                AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
+            ModuleBuilder moduleBuilder =
+                assemblyBuilder.DefineDynamicModule(assemblyName.Name, assemblyName.Name + ".dll");
+            TypeBuilder typeBuilder = moduleBuilder.DefineType(klassType.Name + "HtmlGetter", TypeAttributes.Public, typeof(HtmlGetter));
 
-            TypeBuilder typeBuilder = moduleBuilder.DefineType(klass.Name + "ValueGetter", TypeAttributes.Public, typeof(ValueGetter));
+            MethodBuilder getHtmlMethodBuilder = typeBuilder.DefineMethod("GetHtml", MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.ReuseSlot,
+                typeof(string),
+                new Type[] { typeof(object) }
+            );
 
-            MethodBuilder GetValueMethod = typeBuilder.DefineMethod("GetValue", MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.ReuseSlot, typeof(object), new Type[] { typeof(object), typeof(PropertyInfo)});
-            ILGenerator GetValueMethodIL = GetValueMethod.GetILGenerator();
+            ILGenerator getHtmlGenerator = getHtmlMethodBuilder.GetILGenerator();
+            bool isArray = false;
+            Type thisType = klassType;
+            if (klassType.IsArray)
+            {
+                thisType = klassType.GetElementType();
+                isArray = true;
+            }
 
-            MethodInfo GetMethod = property.GetMethod;
-
-            //TODO GetValueIL
-            GetValueMethodIL.Emit(OpCodes.Ldarg_1);
-            GetValueMethodIL.Emit(OpCodes.Castclass, klass);
-            GetValueMethodIL.Emit(OpCodes.Callvirt, GetMethod);
-            GetValueMethodIL.Emit(OpCodes.Box, property.PropertyType);
-            GetValueMethodIL.Emit(OpCodes.Ret);
-            
-            
-            Type t = typeBuilder.CreateType();
-            assemblyBuilder.Save(assemblyName.Name + ".dll");
-            object getter = Activator.CreateInstance(t);
-            return (IGetter) getter;
-        }
-
-        public string ToHtml(object obj)
-        {
-            StringBuilder result = new StringBuilder("<ul class=\'list-group\'>\n");
-            var objType = obj.GetType();
-            PropertyInfo[] properties = GetPropertyInfoArray(objType);
-
+            PropertyInfo[] properties = GetPropertyInfoArray(thisType);
             HtmlAttributes_init(properties);
 
-            foreach (PropertyInfo property in properties)
+            LocalBuilder localType = getHtmlGenerator.DeclareLocal(thisType);
+            getHtmlGenerator.Emit(OpCodes.Ldarg_1);
+            getHtmlGenerator.Emit(OpCodes.Castclass, thisType);
+            getHtmlGenerator.Emit(OpCodes.Stloc_0, localType);
+            
+            
+            getHtmlGenerator.Emit(OpCodes.Ldstr, "");
+
+            foreach (var property in properties)
             {
                 if (!HtmlIgnoreList.Contains(property))
                 {
-                    if (!gettersDictionary.TryGetValue(property, out var getter))
+                    if (isArray)
                     {
-                        getter = EmitGetter(objType, property);
-                        gettersDictionary.Add(property, getter);
+                        getHtmlGenerator.Emit(OpCodes.Ldstr, "<td>");
+                        getHtmlGenerator.Emit(OpCodes.Call, concat);
+                        if (HtmlAsDict.TryGetValue(property, out var htmlAs))
+                        {
+                            getHtmlGenerator.Emit(OpCodes.Ldstr, htmlAs.Template);
+                            getHtmlGenerator.Emit(OpCodes.Ldstr, "{name}");
+                            getHtmlGenerator.Emit(OpCodes.Ldstr, property.Name);
+                            getHtmlGenerator.Emit(OpCodes.Call, replace);
+                            getHtmlGenerator.Emit(OpCodes.Ldstr, "{value}");
+                            getHtmlGenerator.Emit(OpCodes.Ldloc, localType);
+                            getHtmlGenerator.Emit(OpCodes.Call, property.GetGetMethod());
+                            if (property.PropertyType.IsValueType)
+                                getHtmlGenerator.Emit(OpCodes.Box, property.PropertyType);
+                            getHtmlGenerator.Emit(OpCodes.Call, replace);
+                            getHtmlGenerator.Emit(OpCodes.Call, formatterForArray);
+                            getHtmlGenerator.Emit(OpCodes.Call, concat);
+                        }
+                        else
+                        {
+                            getHtmlGenerator.Emit(OpCodes.Ldloc, localType);
+                            getHtmlGenerator.Emit(OpCodes.Call, property.GetGetMethod());
+                            if (property.PropertyType.IsValueType)
+                                getHtmlGenerator.Emit(OpCodes.Box, property.PropertyType);
+                            getHtmlGenerator.Emit(OpCodes.Call, formatterForArray);
+                            getHtmlGenerator.Emit(OpCodes.Call, concat);
+                        }
+                        //IL para array
+                        getHtmlGenerator.Emit(OpCodes.Ldstr, "</td>");
+                        getHtmlGenerator.Emit(OpCodes.Call, concat);
                     }
-                    string name = property.Name;
-                    string xPected = property.GetValue(obj).ToString();
-                    var pvalue = getter.GetValue(obj, property);
-                    string value = pvalue == null ? "" : pvalue.ToString();
-
-                    if (HtmlAsDict.TryGetValue(property, out var htmlAsAttribute))
-                        result.AppendLine($"<li class=\'list-group-item\'><strong>{name}</strong>: {value}</li>");
+                    else
+                    {
+                        if (HtmlAsDict.TryGetValue(property, out var htmlAs))
+                        {
+                            getHtmlGenerator.Emit(OpCodes.Ldstr, htmlAs.Template);
+                        }
+                        else
+                        {
+                            getHtmlGenerator.Emit(OpCodes.Ldstr, "<li class=\'list-group-item\'><strong>{name}</strong>: {value}</li>");
+                        }
+                        getHtmlGenerator.Emit(OpCodes.Ldstr, "{name}");
+                        getHtmlGenerator.Emit(OpCodes.Ldstr, property.Name);
+                        getHtmlGenerator.Emit(OpCodes.Call, replace);
+                        getHtmlGenerator.Emit(OpCodes.Ldstr, "{value}");
+                        getHtmlGenerator.Emit(OpCodes.Ldloc, localType);
+                        getHtmlGenerator.Emit(OpCodes.Call, property.GetGetMethod());
+                        if (property.PropertyType.IsValueType)
+                            getHtmlGenerator.Emit(OpCodes.Box, property.PropertyType);
+                        getHtmlGenerator.Emit(OpCodes.Call, toString);
+                        getHtmlGenerator.Emit(OpCodes.Call, replace);
+                        getHtmlGenerator.Emit(OpCodes.Call, formatterForObject);
+                        getHtmlGenerator.Emit(OpCodes.Call, concat);
+                    }
                 }
             }
-            return result.AppendLine("</ul>").ToString();
+            getHtmlGenerator.Emit(OpCodes.Ret);
+
+            Type t = typeBuilder.CreateType();
+            assemblyBuilder.Save(assemblyName.Name + ".dll");
+            return (IHtmlGetter)Activator.CreateInstance(t);
+        }
+        public string ToHtml(object source)
+        {
+            StringBuilder html = new StringBuilder("<ul class=\'list-group\'>\n");
+            html.AppendLine(ObjPropertiesToHtml(source));
+            return html.AppendLine("</ul>").ToString();
+        }
+        public string ToHtml(object[] sources)
+        {
+            StringBuilder html = new StringBuilder("<table class='table table-hover'>\n");
+
+            //fill table header
+            html.AppendLine("<thead>\n<tr>");
+            
+            PropertyInfo[] properties = GetPropertyInfoArray(sources[0].GetType());
+            foreach (var property in properties)
+                if (!HtmlIgnoreList.Contains(property))
+                    html.AppendLine("<th>" + property.Name + "</th>");
+
+            html.AppendLine("</tr>\n<thead>\n<tbody>");
+
+            //fill table lines
+            html.AppendLine(ObjPropertiesToHtml(sources));
+
+            return html.AppendLine("</tbody>\n</table>").ToString();
         }
 
-        public string ToHtml(object[] array)
+        public static string ObjPropertiesToHtml(object obj)
         {
-            if (array != null)
+            IHtmlGetter htmlGetter;
+            Type objType = obj.GetType();
+            if (!htmlTypes.TryGetValue(objType, out htmlGetter))
             {
-                StringBuilder result = new StringBuilder("<table class='table table-hover'>\n");
-
-                Type objType = array[0].GetType();
-                PropertyInfo[] properties = GetPropertyInfoArray(objType);
-
-                HtmlAttributes_init(properties);
-
-                //fill table header
-                result.AppendLine("<thead>\n<tr>");
-
-                foreach (var property in properties)
-                    if (!HtmlIgnoreList.Contains(property))
-                        result.AppendLine("<th>" + property.Name + "</th>");
-
-                result.AppendLine("</tr>\n<thead>\n<tbody>");
-
-                //fill table body
-                foreach (var obj in array)
-                {
-                    result.AppendLine("<tr>");
-                    foreach (var property in properties)
-                    {
-                        if (!HtmlIgnoreList.Contains(property))
-                        {
-                            string name = property.Name;
-                            if (!gettersDictionary.TryGetValue(property, out var getter))
-                            {
-                                getter = EmitGetter(objType, property);
-                                gettersDictionary.Add(property, getter);
-                            }
-                            var pvalue = getter.GetValue(obj, property);
-                            string value = pvalue == null ? "" : pvalue.ToString();
-                            
-                            result.AppendLine("<td>");
-                            if (HtmlAsDict.TryGetValue(property, out var htmlAsAttribute))
-                                result.AppendLine(htmlAsAttribute.Template.Replace("{name}", name).Replace("{value}", value));
-                            else
-                                result.AppendLine(value);
-
-                            result.AppendLine("</td>");
-                        }
-                    }
-                    result.AppendLine("</tr>");
-                }
-                return result.AppendLine("</tbody>\n</table>").ToString();
+                htmlGetter = EmitHtmlGetter(objType);
+                htmlTypes.Add(objType, htmlGetter);
             }
-            return ""; //TODO Procura sem resultados
+            return htmlGetter.GetHtml(obj);
         }
     }
 }

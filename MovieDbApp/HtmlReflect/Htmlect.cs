@@ -48,7 +48,7 @@ namespace HtmlReflect
 
         public string ToHtml(object obj)
         {
-            StringBuilder result = new StringBuilder("<ul class=\'list-group\'>\n");
+            StringBuilder html = new StringBuilder("<ul class=\'list-group\'>\n");
             var objType = obj.GetType();
             PropertyInfo[] properties = GetPropertyInfoArray(objType);
 
@@ -63,19 +63,19 @@ namespace HtmlReflect
                     string value = propertyvalue == null ? "" : propertyvalue.ToString();
 
                     if (HtmlAsDict.TryGetValue(property, out var htmlAsAttribute))
-                        result.AppendLine(htmlAsAttribute.Template.Replace("{name}", name).Replace("{value}", value));
+                        html.AppendLine(htmlAsAttribute.Template.Replace("{name}", name).Replace("{value}", value));
                     else
-                        result.AppendLine($"<li class=\'list-group-item\'><strong>{name}</strong>: {value}</li>");
+                        html.AppendLine($"<li class=\'list-group-item\'><strong>{name}</strong>: {value}</li>");
                 }
             }
-            return result.AppendLine("</ul>").ToString();
+            return html.AppendLine("</ul>").ToString();
         }
 
         public string ToHtml(object[] array)
         {
             if (array != null)
             {
-                StringBuilder result = new StringBuilder("<table class='table table-hover'>\n");
+                StringBuilder html = new StringBuilder("<table class='table table-hover'>\n");
             
                 Type objType = array[0].GetType();
                 PropertyInfo[] properties = GetPropertyInfoArray(objType);
@@ -83,18 +83,18 @@ namespace HtmlReflect
                 HtmlAttributes_init(properties);
 
                 //fill table header
-                result.AppendLine("<thead>\n<tr>");
+                html.AppendLine("<thead>\n<tr>");
                 
                 foreach (var property in properties)
                     if (!HtmlIgnoreList.Contains(property))
-                        result.AppendLine("<th>"+property.Name+"</th>");
+                        html.AppendLine("<th>"+property.Name+"</th>");
                 
-                result.AppendLine("</tr>\n<thead>\n<tbody>");
+                html.AppendLine("</tr>\n<thead>\n<tbody>");
 
                 //fill table lines
                 foreach (var obj in array)
                 {
-                    result.AppendLine("<tr>");
+                    html.AppendLine("<tr>");
                     foreach (var property in properties)
                     {
                         if (!HtmlIgnoreList.Contains(property))
@@ -102,19 +102,19 @@ namespace HtmlReflect
                             string name = property.Name;
                             var propertyvalue = property.GetValue(obj);
                             string value = propertyvalue == null ? "" : propertyvalue.ToString();
-                            result.AppendLine("<td>");
+                            html.AppendLine("<td>");
                             
                             if (HtmlAsDict.TryGetValue(property, out var htmlAsAttribute))
-                                result.AppendLine(htmlAsAttribute.Template.Replace("{name}", name).Replace("{value}", value));
+                                html.AppendLine(htmlAsAttribute.Template.Replace("{name}", name).Replace("{value}", value));
                             else
-                                result.AppendLine(value);
+                                html.AppendLine(value);
                             
-                            result.AppendLine("</td>");
+                            html.AppendLine("</td>");
                         }
                     }
-                    result.AppendLine("</tr>");
+                    html.AppendLine("</tr>");
                 }
-                return result.AppendLine("</tbody>\n</table>").ToString();
+                return html.AppendLine("</tbody>\n</table>").ToString();
             }
             return ""; //TODO Procura sem resultados
         }

@@ -1,0 +1,5 @@
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflect\bin\Release\HtmlReflect.dll
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflect\bin\Release\HtmlReflect.pdb
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflect\obj\Release\HtmlReflect.csproj.CoreCompileInputs.cache
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflect\obj\Release\HtmlReflect.dll
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflect\obj\Release\HtmlReflect.pdb

@@ -1,0 +1,10 @@
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\bin\x86\Debug\MovHubDb.dll
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\bin\x86\Debug\MovHubDb.pdb
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\bin\x86\Debug\HtmlReflect.dll
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\bin\x86\Debug\Newtonsoft.Json.dll
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\bin\x86\Debug\HtmlReflect.pdb
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\bin\x86\Debug\Newtonsoft.Json.xml
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\obj\x86\Debug\MovHubDb.csprojResolveAssemblyReference.cache
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\obj\x86\Debug\MovHubDb.csproj.CoreCompileInputs.cache
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\obj\x86\Debug\MovHubDb.dll
+C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\obj\x86\Debug\MovHubDb.pdb
