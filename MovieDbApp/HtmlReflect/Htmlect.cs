@@ -9,11 +9,11 @@ namespace HtmlReflect
     public class Htmlect
     {
         private static Dictionary<Type, PropertyInfo[]> TypeToProperty = new Dictionary<Type, PropertyInfo[]>();
-        
         private static Dictionary<PropertyInfo, HtmlAs> HtmlAsDict = new Dictionary<PropertyInfo, HtmlAs>();
         private static List<PropertyInfo> HtmlIgnoreList = new List<PropertyInfo>();
 
-        public static void HtmlAttributes_init(PropertyInfo[] properties)
+        //Inits HtmlIgnoreList and HtmlAsDict for a set of PropertyInfo to prevent repeated reflection on getting property attributes
+        private static void HtmlAttributes_init(PropertyInfo[] properties)
         {
             foreach (var property in properties)
             {
@@ -33,8 +33,9 @@ namespace HtmlReflect
                 }
             }
         }
-
-        public static PropertyInfo[] GetPropertyInfoArray(Type type)
+        
+        //Checks and updates dictionary to prevent use of repeated reflection on Type.GetProperties()
+        private static PropertyInfo[] GetPropertyInfoArray(Type type)
         {
             PropertyInfo[] properties;
             //check dictionary to prevent use of repeated reflection
@@ -73,50 +74,46 @@ namespace HtmlReflect
 
         public string ToHtml(object[] array)
         {
-            if (array != null)
+            StringBuilder html = new StringBuilder("<table class='table table-hover'>\n");
+
+            Type objType = array.GetType().GetElementType();
+
+            PropertyInfo[] properties = GetPropertyInfoArray(objType);
+            HtmlAttributes_init(properties);
+
+            //fill table header
+            html.AppendLine("<thead>\n<tr>");
+
+            foreach (var property in properties)
+                if (!HtmlIgnoreList.Contains(property))
+                    html.AppendLine("<th>" + property.Name + "</th>");
+
+            html.AppendLine("</tr>\n<thead>\n<tbody>");
+
+            //fill table lines
+            foreach (var obj in array)
             {
-                StringBuilder html = new StringBuilder("<table class='table table-hover'>\n");
-            
-                Type objType = array[0].GetType();
-                PropertyInfo[] properties = GetPropertyInfoArray(objType);
-
-                HtmlAttributes_init(properties);
-
-                //fill table header
-                html.AppendLine("<thead>\n<tr>");
-                
+                html.AppendLine("<tr>");
                 foreach (var property in properties)
-                    if (!HtmlIgnoreList.Contains(property))
-                        html.AppendLine("<th>"+property.Name+"</th>");
-                
-                html.AppendLine("</tr>\n<thead>\n<tbody>");
-
-                //fill table lines
-                foreach (var obj in array)
                 {
-                    html.AppendLine("<tr>");
-                    foreach (var property in properties)
+                    if (!HtmlIgnoreList.Contains(property))
                     {
-                        if (!HtmlIgnoreList.Contains(property))
-                        {
-                            string name = property.Name;
-                            var propertyvalue = property.GetValue(obj);
-                            string value = propertyvalue == null ? "" : propertyvalue.ToString();
-                            html.AppendLine("<td>");
-                            
-                            if (HtmlAsDict.TryGetValue(property, out var htmlAsAttribute))
-                                html.AppendLine(htmlAsAttribute.Template.Replace("{name}", name).Replace("{value}", value));
-                            else
-                                html.AppendLine(value);
-                            
-                            html.AppendLine("</td>");
-                        }
+                        string name = property.Name;
+                        var propertyvalue = property.GetValue(obj);
+                        string value = propertyvalue == null ? "" : propertyvalue.ToString();
+                        html.AppendLine("<td>");
+
+                        if (HtmlAsDict.TryGetValue(property, out var htmlAsAttribute))
+                            html.AppendLine(htmlAsAttribute.Template.Replace("{name}", name).Replace("{value}", value));
+                        else
+                            html.AppendLine(value);
+
+                        html.AppendLine("</td>");
                     }
-                    html.AppendLine("</tr>");
                 }
-                return html.AppendLine("</tbody>\n</table>").ToString();
+                html.AppendLine("</tr>");
             }
-            return ""; //TODO Procura sem resultados
+            return html.AppendLine("</tbody>\n</table>").ToString();
         }
     }
 }

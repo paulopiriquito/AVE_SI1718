@@ -4,7 +4,7 @@ namespace MovHubDb.Model
 {
     public class PersonCredits
     {
-        private PersonCreditsItem[] cast, crew, all;
+        private PersonCreditsItem[] cast, crew;
         
         [JsonProperty("cast")]
         public PersonCreditsItem[] Cast

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace HtmlReflect
+﻿namespace HtmlReflect
 {
     [System.AttributeUsage(System.AttributeTargets.Property)]
     public class HtmlAs : System.Attribute

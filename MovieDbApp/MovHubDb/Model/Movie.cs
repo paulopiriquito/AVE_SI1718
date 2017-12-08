@@ -5,7 +5,6 @@ namespace MovHubDb.Model
 {
     public class Movie
     {
-        private bool isAdult;
         private string overview, releaseDate, originalTitle, tagLine, posterPath;
         private int id, budget, revenue;
         private float popularity, voteAverage;

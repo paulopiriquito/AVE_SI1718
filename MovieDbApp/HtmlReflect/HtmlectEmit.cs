@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace HtmlReflect
 {
@@ -34,8 +32,8 @@ namespace HtmlReflect
         private static Dictionary<PropertyInfo, HtmlAs> HtmlAsDict = new Dictionary<PropertyInfo, HtmlAs>(); // saves property HtmlAs attributes
         private static List<PropertyInfo> HtmlIgnoreList = new List<PropertyInfo>(); // saves property HtmlIgnore attributes
 
-        //inits HtmlIgnoreList and HtmlAsDict for a set of propertyinfos to prevent repeated reflection on getting property attributes
-        public static void HtmlAttributes_init(PropertyInfo[] properties)
+        //Inits HtmlIgnoreList and HtmlAsDict for a set of PropertyInfo to prevent repeated reflection on getting property attributes
+        private static void HtmlAttributes_init(PropertyInfo[] properties)
         {
             foreach (var property in properties)
             {
@@ -55,8 +53,9 @@ namespace HtmlReflect
                 }
             }
         }
-        //checks and updates dictionary to prevent use of repeated reflection on Type.GetProperties()
-        public static PropertyInfo[] GetPropertyInfoArray(Type type)
+        
+        //Checks and updates dictionary to prevent use of repeated reflection on Type.GetProperties()
+        private static PropertyInfo[] GetPropertyInfoArray(Type type)
         {
             if (!TypeProperties.TryGetValue(type, out var properties))
             {
@@ -65,9 +64,11 @@ namespace HtmlReflect
             }
             return properties;
         }
+
+        //Emits an IHtmlGetter for a Type
         public static IHtmlGetter EmitHtmlGetter(Type klass)
         {
-            AssemblyName assemblyName = new AssemblyName(klass.Name + "DynamicHtmlEmiter");
+            AssemblyName assemblyName = new AssemblyName(klass.Name + "DynamicHtmlGetter");
             AssemblyBuilder assemblyBuilder =
                 AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
             ModuleBuilder moduleBuilder =
@@ -81,8 +82,8 @@ namespace HtmlReflect
             
             ILGenerator il = getHtmlMethodBuilder.GetILGenerator();
 
-            PropertyInfo[] piInfos = GetPropertyInfoArray(klass);
-            HtmlAttributes_init(piInfos);
+            PropertyInfo[] propertyInfoArray = GetPropertyInfoArray(klass);
+            HtmlAttributes_init(propertyInfoArray);
 
             LocalBuilder target = il.DeclareLocal(klass);
             il.Emit(OpCodes.Ldarg_1);          // push target
@@ -92,25 +93,25 @@ namespace HtmlReflect
 
             il.Emit(OpCodes.Ldstr, "");
 
-            foreach (PropertyInfo p in piInfos)
+            foreach (PropertyInfo propertyInfo in propertyInfoArray)
             {
-                if (HtmlIgnoreList.Contains(p)) continue;
+                if (HtmlIgnoreList.Contains(propertyInfo)) continue;
 
-                il.Emit(OpCodes.Ldstr, p.Name);    // push on stack the property name
+                il.Emit(OpCodes.Ldstr, propertyInfo.Name);    // push on stack the property name
                 il.Emit(OpCodes.Ldloc, target);    // ldloc target
-                il.Emit(OpCodes.Call, p.GetGetMethod()); //push on stack the property value
+                il.Emit(OpCodes.Call, propertyInfo.GetGetMethod()); //push on stack the property value
 
-                if (p.PropertyType.IsValueType)
-                    il.Emit(OpCodes.Box, p.PropertyType); // box the property value to correct type
+                if (propertyInfo.PropertyType.IsValueType)
+                    il.Emit(OpCodes.Box, propertyInfo.PropertyType); // box the property value to correct type
                 
                 //push on stack the html format template (htmlAs or the given default)
-                if (HtmlAsDict.TryGetValue(p, out HtmlAs htmlAs))
+                if (HtmlAsDict.TryGetValue(propertyInfo, out HtmlAs htmlAs))
                 {
-                    il.Emit(OpCodes.Ldstr, htmlAs.Template); //HtmlAs
+                    il.Emit(OpCodes.Ldstr, htmlAs.Template); //HtmlAs format
                 }
                 else
                 {
-                    il.Emit(OpCodes.Ldarg_2); //default
+                    il.Emit(OpCodes.Ldarg_2); //default format
                 }
                 
                 il.Emit(OpCodes.Ldarg_3); //push on stack the formatting type (simple(false) or table entry(true))
@@ -123,12 +124,16 @@ namespace HtmlReflect
             assemblyBuilder.Save(assemblyName.Name + ".dll");
             return (IHtmlGetter)Activator.CreateInstance(t);
         }
+        
+        //Returns html of object in list style
         public string ToHtml(object source)
         {
             StringBuilder html = new StringBuilder("<ul class=\'list-group\'>\n");
             html.AppendLine(ObjPropertiesToHtml(source, "<li class=\'list-group-item\'><strong>{name}</strong>: {value}</li>", false));
             return html.AppendLine("</ul>").ToString();
         }
+        
+        //Returns html of object array in table style
         public string ToHtml(object[] sources)
         {
             StringBuilder html = new StringBuilder("<table class='table table-hover'>\n");
@@ -153,7 +158,8 @@ namespace HtmlReflect
             
             return html.AppendLine("</tbody>\n</table>").ToString();
         }
-
+        
+        //Gets html of object using an IHtmlGetter from dictionary or emits(and saves) a new one
         public static string ObjPropertiesToHtml(object obj, string defaultTemplate, bool isTable)
         {
             IHtmlGetter htmlGetter;

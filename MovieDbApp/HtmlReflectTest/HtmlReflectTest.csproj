@@ -66,7 +66,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestEmitVsReflect.cs" />
+    <Compile Include="BenchHtmlectVsHtmlectEmit.cs" />
     <Compile Include="NBench.cs" />
     <Compile Include="HtmlectEmitTest.cs" />
     <Compile Include="CustomAttributeTest.cs" />
