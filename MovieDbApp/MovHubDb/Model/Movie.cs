@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace MovHubDb.Model
 {
-    public struct Movie
+    public class Movie
     {
         private bool isAdult;
         private string overview, releaseDate, originalTitle, tagLine, posterPath;
