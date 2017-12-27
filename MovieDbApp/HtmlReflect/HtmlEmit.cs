@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
@@ -12,14 +13,14 @@ namespace HtmlReflect
 
 		string GetHtml(object obj);
 	}
-    public abstract class HtmlGetter : IHtmlGetter {// TODO Deprecated
-	    private IHtmlGetter htmlGetter;
+    public abstract class HtmlGetter : IHtmlGetter {
+	    private HtmlEmit htmlEmit;
 
-	    public HtmlGetter(IHtmlGetter htmlGetter) {
-		    this.htmlGetter = htmlGetter;
+	    public HtmlGetter(HtmlEmit htmlEmit) {
+		    this.htmlEmit = htmlEmit;
 	    }
 	    
-        public static string FormatHtml(string name, object val, string format, bool isTable)
+        public string FormatHtml(string name, object val, string format, bool isTable)
         {
             var value = val == null ? "" : val.ToString();
             string ret = format.Replace("{name}", name).Replace("{value}", value);
@@ -42,8 +43,6 @@ namespace HtmlReflect
         private static Dictionary<PropertyInfo, HtmlAs> HtmlAsDict = new Dictionary<PropertyInfo, HtmlAs>(); // saves property HtmlAs attributes
         private static List<PropertyInfo> HtmlIgnoreList = new List<PropertyInfo>(); // saves property HtmlIgnore attributes
 	    
-	    private static Dictionary<Type, IHtmlGetter> htmlFormatTypes = new Dictionary<Type, IHtmlGetter>();
-
         //Inits HtmlIgnoreList and HtmlAsDict for a set of PropertyInfo to prevent repeated reflection on getting property attributes
         private static void HtmlAttributes_init(PropertyInfo[] properties)
         {
@@ -78,7 +77,7 @@ namespace HtmlReflect
         }
 
         //Emits an IHtmlGetter for a Type
-        public static IHtmlGetter EmitHtmlGetter(Type klass)
+        private IHtmlGetter EmitHtmlGetter(Type klass)
         {
             AssemblyName assemblyName = new AssemblyName(klass.Name + "DynamicHtmlGetter");
             AssemblyBuilder assemblyBuilder =
@@ -87,20 +86,54 @@ namespace HtmlReflect
                 assemblyBuilder.DefineDynamicModule(assemblyName.Name, assemblyName.Name + ".dll");
             TypeBuilder typeBuilder = moduleBuilder.DefineType(klass.Name + "HtmlGetter", TypeAttributes.Public, typeof(HtmlGetter));
 
-            MethodBuilder getHtmlMethodBuilder = typeBuilder.DefineMethod("GetHtml", MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.ReuseSlot,
+            EmitCtor(klass ,typeBuilder);
+
+            EmitGetHtml(klass, typeBuilder);
+
+            Type t = typeBuilder.CreateType();
+            assemblyBuilder.Save(assemblyName.Name + ".dll");
+            return (IHtmlGetter)Activator.CreateInstance(t, new object[] { this });
+        }
+        public static void EmitCtor(Type klass, TypeBuilder typeBuilder)
+        {
+            Type[] parameterTypes = { typeof(HtmlEmit) };
+
+            /*ConstructorBuilder ctor = typeBuilder.DefineConstructor(
+                MethodAttributes.Public,
+                CallingConventions.Standard,
+                parameterTypes);*/
+            ConstructorInfo objCtor = typeof(HtmlGetter).GetConstructor(parameterTypes);
+
+            ConstructorBuilder ctor = typeBuilder.DefineConstructor(
+                MethodAttributes.Public,
+                CallingConventions.Standard,
+                parameterTypes);
+
+            ILGenerator il = ctor.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Call, objCtor);
+            il.Emit(OpCodes.Ldarg_1);
+            il.Emit(OpCodes.Call, typeof(HtmlGetter).GetConstructor(parameterTypes));
+            il.Emit(OpCodes.Ret);
+        }
+
+        public static void EmitGetHtml(Type klass, TypeBuilder typeBuilder)
+        {
+            MethodBuilder getHtmlMethodBuilder = typeBuilder.DefineMethod("GetHtml",
+                MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.ReuseSlot,
                 typeof(string),
-                new Type[] { typeof(object), typeof(string), typeof(bool) }
+                new Type[] {typeof(object), typeof(string), typeof(bool)}
             );
-            
+
             ILGenerator il = getHtmlMethodBuilder.GetILGenerator();
 
             PropertyInfo[] propertyInfoArray = GetPropertyInfoArray(klass);
             HtmlAttributes_init(propertyInfoArray);
 
             LocalBuilder target = il.DeclareLocal(klass);
-            il.Emit(OpCodes.Ldarg_1);          // push target
+            il.Emit(OpCodes.Ldarg_1); // push target
             il.Emit(OpCodes.Castclass, klass); // castclass
-            il.Emit(OpCodes.Stloc, target);    // store on local variable 
+            il.Emit(OpCodes.Stloc, target); // store on local variable 
 
 
             il.Emit(OpCodes.Ldstr, "");
@@ -109,13 +142,13 @@ namespace HtmlReflect
             {
                 if (HtmlIgnoreList.Contains(propertyInfo)) continue;
 
-                il.Emit(OpCodes.Ldstr, propertyInfo.Name);    // push on stack the property name
-                il.Emit(OpCodes.Ldloc, target);    // ldloc target
+                il.Emit(OpCodes.Ldstr, propertyInfo.Name); // push on stack the property name
+                il.Emit(OpCodes.Ldloc, target); // ldloc target
                 il.Emit(OpCodes.Call, propertyInfo.GetGetMethod()); //push on stack the property value
 
                 if (propertyInfo.PropertyType.IsValueType)
                     il.Emit(OpCodes.Box, propertyInfo.PropertyType); // box the property value to correct type
-                
+
                 //push on stack the html format template (htmlAs or the given default)
                 if (HtmlAsDict.TryGetValue(propertyInfo, out HtmlAs htmlAs))
                 {
@@ -125,18 +158,14 @@ namespace HtmlReflect
                 {
                     il.Emit(OpCodes.Ldarg_2); //default format
                 }
-                
+
                 il.Emit(OpCodes.Ldarg_3); //push on stack the formatting type (simple(false) or table entry(true))
                 il.Emit(OpCodes.Call, formatterForHtml); //call formatter
                 il.Emit(OpCodes.Call, concat); // concat with html from last property
             }
             il.Emit(OpCodes.Ret); // ret resulting html
-
-            Type t = typeBuilder.CreateType();
-            assemblyBuilder.Save(assemblyName.Name + ".dll");
-            return (IHtmlGetter)Activator.CreateInstance(t);
         }
-        
+
         //Returns html of object in list style
         public string ToHtml(object source)
         {
@@ -174,38 +203,64 @@ namespace HtmlReflect
 		//Returns custom HtmlEmit for type details html
 	    public HtmlEmit ForTypeDetails<T>(Func<T, string> transf) {
 		    Type type = typeof(T);
-		    htmlFormatTypes.Add(type, new HtmlFormatter<T>(transf));
+		    htmlTypes.Add(type, new HtmlFormatObj<T>(transf));
 		    return this;
 	    }
 	    //Returns custom HtmlEmit for type in table html for table headers and first table line //TODO
-		public HtmlEmit ForTypeInTable<T>(IEnumerable<string> headers, Func<T, string> transf) {
-			throw new NotImplementedException();
+		public HtmlEmit ForTypeInTable<T>(IEnumerable<string> headers, Func<T, string> transf)
+		{
+		    Type type = typeof(T);
+            htmlTypes.Add(type, new HtmlFormatObj<T>(transf));
 			return this;
 		}
 	    //Returns custom HtmlEmit for type list html //TODO
-		public HtmlEmit ForSequenceOf<T>(Func<IEnumerable<T>, string> transf) {
-			throw new NotImplementedException();
+		public HtmlEmit ForSequenceOf<T>(Func<IEnumerable<T>, string> transf)
+		{
+		    Type type = typeof(T);
+            htmlTypes.Add(type, new HtmlFormatEnum<T>(transf));
 			return this;
 		}
 
-	    class HtmlFormatter<T> : IHtmlGetter { //TODO replace HtmlGetter with HtmlFormater and emit code to return the delegate func
+	    class HtmlFormatObj<T> : IHtmlGetter { //TODO replace HtmlGetter with HtmlFormater and emit code to return the delegate func
 		    private Func<T, string> formatter;
 
-		    public HtmlFormatter(Func<T, string> formatter_param) {
+		    public HtmlFormatObj(Func<T, string> formatter_param) {
 			    formatter = formatter_param;
 		    }
 
-		    public string GetHtml(object obj, string defaultTemplate, bool isTable) {
-			    throw new NotImplementedException();
-		    }
+	        public string GetHtml(object obj, string defaultTemplate, bool isTable)
+	        {
+	            return GetHtml(obj);
+	        }
 
-		    public string GetHtml(object obj) {
+	        public string GetHtml(object obj) {
 			    return formatter((T) obj);
 		    }
 	    }
 
+        class HtmlFormatEnum<T> : IHtmlGetter
+        {
+            private Func<IEnumerable<T>, string> formatter;
+
+            public HtmlFormatEnum(Func<IEnumerable<T>, string> formatter_param)
+            {
+                formatter = formatter_param;
+            }
+
+            public string GetHtml(object obj, string defaultTemplate, bool isTable)
+            {
+                return GetHtml(obj);
+            }
+
+            public string GetHtml(object obj)
+            {
+                return formatter((IEnumerable<T>) obj);
+            }
+        }
+        
+
 		//Gets html of object using an IHtmlGetter from dictionary or emits(and saves) a new one
-		public static string ObjPropertiesToHtml(object obj, string defaultTemplate, bool isTable)
+		public string ObjPropertiesToHtml(object obj, string defaultTemplate, bool isTable)
         {
             IHtmlGetter htmlGetter;
             Type objType = obj.GetType();

@@ -8,3 +8,13 @@ C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\obj\Debug\MovHubDb.csprojRes
 C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\obj\Debug\MovHubDb.csproj.CoreCompileInputs.cache
 C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\obj\Debug\MovHubDb.dll
 C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\MovHubDb\obj\Debug\MovHubDb.pdb
+C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\MovHubDb\bin\Debug\MovHubDb.dll
+C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\MovHubDb\bin\Debug\MovHubDb.pdb
+C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\MovHubDb\bin\Debug\HtmlReflect.dll
+C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\MovHubDb\bin\Debug\Newtonsoft.Json.dll
+C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\MovHubDb\bin\Debug\HtmlReflect.pdb
+C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\MovHubDb\bin\Debug\Newtonsoft.Json.xml
+C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\MovHubDb\obj\Debug\MovHubDb.csprojResolveAssemblyReference.cache
+C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\MovHubDb\obj\Debug\MovHubDb.csproj.CoreCompileInputs.cache
+C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\MovHubDb\obj\Debug\MovHubDb.dll
+C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\MovHubDb\obj\Debug\MovHubDb.pdb

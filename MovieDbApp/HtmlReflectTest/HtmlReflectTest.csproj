@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BenchHtmlectVsHtmlectEmit.cs" />
+    <Compile Include="HtmlFormatTest.cs" />
     <Compile Include="NBench.cs" />
     <Compile Include="HtmlectEmitTest.cs" />
     <Compile Include="CustomAttributeTest.cs" />
