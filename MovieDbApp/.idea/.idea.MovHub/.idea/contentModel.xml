@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\Users\Paulo\.Rider2017.2\system\resharper-host\local\Transient\ReSharperHost\v10\SolutionCaches\_MovHub.167549205.00" t="ExcludeRecursive" />
+    <e p="C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp" t="IncludeFlat">
+      <e p="HtmlReflect" t="IncludeRecursive">
+        <e p="bin" t="ExcludeRecursive" />
+        <e p="HtmlAs.cs" t="Include" />
+        <e p="Htmlect.cs" t="Include" />
+        <e p="HtmlectEmit.cs" t="Include" />
+        <e p="HtmlIgnore.cs" t="Include" />
+        <e p="HtmlReflect.csproj" t="IncludeRecursive" />
+        <e p="obj" t="ExcludeRecursive" />
+        <e p="Properties" t="Include">
+          <e p="AssemblyInfo.cs" t="Include" />
+        </e>
+      </e>
+      <e p="HtmlReflectTest" t="IncludeRecursive">
+        <e p="BenchHtmlectVsHtmlectEmit.cs" t="Include" />
+        <e p="bin" t="ExcludeRecursive" />
+        <e p="CustomAttributeTest.cs" t="Include" />
+        <e p="HtmlectEmitTest.cs" t="Include" />
+        <e p="HtmlectTest.cs" t="Include" />
+        <e p="HtmlReflectTest.csproj" t="IncludeRecursive" />
+        <e p="MovHubDbTest.cs" t="Include" />
+        <e p="NBench.cs" t="Include" />
+        <e p="obj" t="ExcludeRecursive" />
+        <e p="packages.config" t="Include" />
+        <e p="Properties" t="Include">
+          <e p="AssemblyInfo.cs" t="Include" />
+        </e>
+        <e p="pt" t="Include" />
+      </e>
+      <e p="MovHub.sln" t="IncludeFlat" />
+      <e p="MovHubDb" t="IncludeRecursive">
+        <e p="bin" t="ExcludeRecursive" />
+        <e p="Model" t="Include">
+          <e p="Credits.cs" t="Include" />
+          <e p="CreditsItem.cs" t="Include" />
+          <e p="Movie.cs" t="Include" />
+          <e p="MovieSearch.cs" t="Include" />
+          <e p="MovieSearchItem.cs" t="Include" />
+          <e p="Person.cs" t="Include" />
+          <e p="PersonCredits.cs" t="Include" />
+          <e p="PersonCreditsItem.cs" t="Include" />
+        </e>
+        <e p="MovHubDb.csproj" t="IncludeRecursive" />
+        <e p="obj" t="ExcludeRecursive" />
+        <e p="packages.config" t="Include" />
+        <e p="Properties" t="Include">
+          <e p="AssemblyInfo.cs" t="Include" />
+        </e>
+        <e p="TheMovieDbClient.cs" t="Include" />
+      </e>
+      <e p="MovHubWebApp" t="IncludeRecursive">
+        <e p="App.config" t="Include" />
+        <e p="bin" t="ExcludeRecursive" />
+        <e p="MovHubModule.cs" t="Include" />
+        <e p="MovHubViewModel.cs" t="Include" />
+        <e p="MovHubWebApp.csproj" t="IncludeRecursive" />
+        <e p="obj" t="ExcludeRecursive" />
+        <e p="packages.config" t="Include" />
+        <e p="Program.cs" t="Include" />
+        <e p="Properties" t="Include">
+          <e p="AssemblyInfo.cs" t="Include" />
+        </e>
+        <e p="Views" t="Include">
+          <e p="ViewDetails.html" t="Include" />
+          <e p="ViewTable.html" t="Include" />
+        </e>
+      </e>
+      <e p="packages" t="ExcludeRecursive">
+        <e p="MSTest.TestAdapter.1.1.18\build\_common\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll" t="Include" />
+        <e p="MSTest.TestAdapter.1.1.18\build\_common\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll" t="Include" />
+        <e p="MSTest.TestAdapter.1.1.18\build\_common\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll" t="Include" />
+        <e p="MSTest.TestAdapter.1.1.18\build\_common\pt\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.resources.dll" t="Include" />
+        <e p="MSTest.TestAdapter.1.1.18\build\_common\pt\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.resources.dll" t="Include" />
+        <e p="MSTest.TestAdapter.1.1.18\build\_common\pt\Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll" t="Include" />
+      </e>
+    </e>
+  </component>
+</project>

@@ -12,7 +12,7 @@ namespace HtmlReflectTest
         private static int PAGES_TO_BENCH = 10;
         private static TheMovieDbClient movieDb = new TheMovieDbClient();
         private static Htmlect htmlReflectTest = new Htmlect();
-        private static HtmlectEmit htmlectEmitTest = new HtmlectEmit();
+        private static HtmlEmit htmlectEmitTest = new HtmlEmit();
         private static MovieSearchItem[] sampleArray = movieDb.Search("world", 1);
         static BenchHtmlectVsHtmlectEmit()
         {

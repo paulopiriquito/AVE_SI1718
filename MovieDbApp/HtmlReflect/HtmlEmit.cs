@@ -9,9 +9,16 @@ namespace HtmlReflect
     public interface IHtmlGetter
     {
         string GetHtml(object obj, string defaultTemplate, bool isTable);
-    }
-    public abstract class HtmlGetter : IHtmlGetter
-    {
+
+		string GetHtml(object obj);
+	}
+    public abstract class HtmlGetter : IHtmlGetter {// TODO Deprecated
+	    private IHtmlGetter htmlGetter;
+
+	    public HtmlGetter(IHtmlGetter htmlGetter) {
+		    this.htmlGetter = htmlGetter;
+	    }
+	    
         public static string FormatHtml(string name, object val, string format, bool isTable)
         {
             var value = val == null ? "" : val.ToString();
@@ -21,8 +28,11 @@ namespace HtmlReflect
             return ret;
         }
         public abstract string GetHtml(object target, string defaultTemplate, bool isTable);
+	    public string GetHtml(object obj) {
+		    throw new NotImplementedException();
+	    }
     }
-    public class HtmlectEmit
+    public class HtmlEmit
     {
         static readonly MethodInfo formatterForHtml = typeof(HtmlGetter).GetMethod("FormatHtml", new Type[] { typeof(String), typeof(object), typeof(String), typeof(bool) });
         static readonly MethodInfo concat = typeof(String).GetMethod("Concat", new Type[] { typeof(string), typeof(string) });
@@ -31,6 +41,8 @@ namespace HtmlReflect
         private static Dictionary<Type, PropertyInfo[]> TypeProperties = new Dictionary<Type, PropertyInfo[]>(); //saves a PropertyInfo[] for a Type
         private static Dictionary<PropertyInfo, HtmlAs> HtmlAsDict = new Dictionary<PropertyInfo, HtmlAs>(); // saves property HtmlAs attributes
         private static List<PropertyInfo> HtmlIgnoreList = new List<PropertyInfo>(); // saves property HtmlIgnore attributes
+	    
+	    private static Dictionary<Type, IHtmlGetter> htmlFormatTypes = new Dictionary<Type, IHtmlGetter>();
 
         //Inits HtmlIgnoreList and HtmlAsDict for a set of PropertyInfo to prevent repeated reflection on getting property attributes
         private static void HtmlAttributes_init(PropertyInfo[] properties)
@@ -134,14 +146,14 @@ namespace HtmlReflect
         }
         
         //Returns html of object array in table style
-        public string ToHtml(object[] sources)
+        public string ToHtml<T>(IEnumerable<T> arr)
         {
             StringBuilder html = new StringBuilder("<table class='table table-hover'>\n");
 
             //fill table header
             html.AppendLine("<thead>\n<tr>");
             
-            PropertyInfo[] properties = GetPropertyInfoArray(sources.GetType().GetElementType());
+            PropertyInfo[] properties = GetPropertyInfoArray(arr.GetType().GetElementType());
             HtmlAttributes_init(properties);
             
             foreach (var property in properties)
@@ -151,16 +163,49 @@ namespace HtmlReflect
             html.AppendLine("</tr>\n<thead>\n<tbody>");
 
             //fill table lines
-            foreach (var obj in sources)
+            foreach (var obj in arr)
             {
                 html.AppendLine("<tr>" + ObjPropertiesToHtml(obj, "{value}", true) + "</tr>");
             }
             
             return html.AppendLine("</tbody>\n</table>").ToString();
         }
-        
-        //Gets html of object using an IHtmlGetter from dictionary or emits(and saves) a new one
-        public static string ObjPropertiesToHtml(object obj, string defaultTemplate, bool isTable)
+	    
+		//Returns custom HtmlEmit for type details html
+	    public HtmlEmit ForTypeDetails<T>(Func<T, string> transf) {
+		    Type type = typeof(T);
+		    htmlFormatTypes.Add(type, new HtmlFormatter<T>(transf));
+		    return this;
+	    }
+	    //Returns custom HtmlEmit for type in table html for table headers and first table line //TODO
+		public HtmlEmit ForTypeInTable<T>(IEnumerable<string> headers, Func<T, string> transf) {
+			throw new NotImplementedException();
+			return this;
+		}
+	    //Returns custom HtmlEmit for type list html //TODO
+		public HtmlEmit ForSequenceOf<T>(Func<IEnumerable<T>, string> transf) {
+			throw new NotImplementedException();
+			return this;
+		}
+
+	    class HtmlFormatter<T> : IHtmlGetter { //TODO replace HtmlGetter with HtmlFormater and emit code to return the delegate func
+		    private Func<T, string> formatter;
+
+		    public HtmlFormatter(Func<T, string> formatter_param) {
+			    formatter = formatter_param;
+		    }
+
+		    public string GetHtml(object obj, string defaultTemplate, bool isTable) {
+			    throw new NotImplementedException();
+		    }
+
+		    public string GetHtml(object obj) {
+			    return formatter((T) obj);
+		    }
+	    }
+
+		//Gets html of object using an IHtmlGetter from dictionary or emits(and saves) a new one
+		public static string ObjPropertiesToHtml(object obj, string defaultTemplate, bool isTable)
         {
             IHtmlGetter htmlGetter;
             Type objType = obj.GetType();
