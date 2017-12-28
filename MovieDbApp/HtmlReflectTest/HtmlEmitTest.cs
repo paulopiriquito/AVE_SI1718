@@ -8,7 +8,7 @@ using MovHubDb.Model;
 namespace HtmlReflectTest
 {
     [TestClass]
-    public class HtmlectEmitTest
+    public class HtmlEmitTest
     {
         private static Movie movie;
 
@@ -19,7 +19,7 @@ namespace HtmlReflectTest
         private static String expectedMoviesHtml =
                 "<table class=\'table table-hover\'><thead><tr><th>Id</th><th>Title</th><th>ReleaseDate</th></tr><thead><tbody><tr><td><a href=\'/movies/11\'> 11 </a></td><td>Star Wars</td><td>1977-05-25</td></tr></tbody></table>";
         private static HtmlEmit htmlectEmit = new HtmlEmit();
-        static HtmlectEmitTest()
+        static HtmlEmitTest()
         {
             movie = new Movie();
             movie.Id = 11;

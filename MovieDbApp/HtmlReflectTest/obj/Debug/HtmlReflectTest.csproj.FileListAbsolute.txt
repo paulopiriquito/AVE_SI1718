@@ -1,9 +1,6 @@
 C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflectTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll
 C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflectTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll
 C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflectTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflectTest\bin\Debug\pt\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.resources.dll
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflectTest\bin\Debug\pt\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.resources.dll
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflectTest\bin\Debug\pt\Microsoft.VisualStudio.TestPlatform.TestFramework.resources.dll
 C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflectTest\bin\Debug\HtmlReflectTest.dll
 C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflectTest\bin\Debug\HtmlReflectTest.pdb
 C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\HtmlReflectTest\bin\Debug\HtmlReflect.dll

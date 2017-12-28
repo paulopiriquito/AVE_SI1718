@@ -67,9 +67,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BenchHtmlectVsHtmlectEmit.cs" />
-    <Compile Include="HtmlFormatTypeDetailsTest.cs" />
+    <Compile Include="HtmlEmitFormatedTest.cs" />
     <Compile Include="NBench.cs" />
-    <Compile Include="HtmlectEmitTest.cs" />
+    <Compile Include="HtmlEmitTest.cs" />
     <Compile Include="CustomAttributeTest.cs" />
     <Compile Include="HtmlectTest.cs" />
     <Compile Include="MovHubDbTest.cs" />

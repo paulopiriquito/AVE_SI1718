@@ -15,7 +15,7 @@ using MovHubDb.Model;
 namespace HtmlReflectTest
 {
     [TestClass]
-    public class HtmlFormatTypeDetailsTest
+    public class HtmlEmitFormatedTest
     {
         private static Movie movie;
         private static Person expected;
@@ -28,7 +28,7 @@ namespace HtmlReflectTest
 
         private static string expectedForSequenceOf = "<h1>Movie ids</h1><ul><li>11</li></h1>";
         private static HtmlEmit htmlectEmit = new HtmlEmit();
-        static HtmlFormatTypeDetailsTest()
+        static HtmlEmitFormatedTest()
         {
             movie = new Movie();
             movie.Id = 11;
@@ -83,12 +83,12 @@ namespace HtmlReflectTest
         [TestMethod]
         public void HtmlFormatterForSequenceOfTest()
         {
-            htmlectEmit.ForSequenceOf<MovieSearchItem>(movies =>
+            HtmlEmit htmlEmit = htmlectEmit.ForSequenceOf<MovieSearchItem>(movies =>
             {
                 string movieLine = movies.Aggregate("", (prev, mov) => prev + "<li>" + mov.Id + "</li>");
                 return "<h1>Movie ids</h1><ul>" + movieLine + "</h1>";
             });
-            string result = htmlectEmit.ToHtml(movies);
+            string result = htmlEmit.ToHtml(movies);
             result = Regex.Replace(result, @"\t|\n|\r", "");
             Assert.AreEqual(expectedForSequenceOf, result);
         }
