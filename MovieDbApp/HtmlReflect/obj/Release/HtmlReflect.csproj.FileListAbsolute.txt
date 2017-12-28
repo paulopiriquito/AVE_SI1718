@@ -1,6 +1,0 @@
-C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\HtmlReflect\bin\Release\HtmlReflect.dll
-C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\HtmlReflect\bin\Release\HtmlReflect.pdb
-C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\HtmlReflect\obj\Release\HtmlReflect.csprojResolveAssemblyReference.cache
-C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\HtmlReflect\obj\Release\HtmlReflect.csproj.CoreCompileInputs.cache
-C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\HtmlReflect\obj\Release\HtmlReflect.dll
-C:\Users\JPAULO\Desktop\AVE\AVE\MovieDbApp\HtmlReflect\obj\Release\HtmlReflect.pdb

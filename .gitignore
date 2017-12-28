@@ -25,5 +25,6 @@ hs_err_pid*
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+[Tt]est[Rr]esults/
 .vs/
 .idea/

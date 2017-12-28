@@ -1,6 +1,0 @@
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\b\MovHubDb\bin\Debug\MovHubDb.dll
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\b\MovHubDb\bin\Debug\MovHubDb.pdb
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\i\MovHubDb\Debug\MovHubDb.csprojResolveAssemblyReference.cache
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\i\MovHubDb\Debug\MovHubDb.csproj.CoreCompileInputs.cache
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\i\MovHubDb\Debug\MovHubDb.dll
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\i\MovHubDb\Debug\MovHubDb.pdb

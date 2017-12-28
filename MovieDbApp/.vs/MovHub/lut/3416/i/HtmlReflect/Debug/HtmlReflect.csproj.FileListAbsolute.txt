@@ -1,6 +1,0 @@
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\b\HtmlReflect\bin\Debug\HtmlReflect.dll
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\b\HtmlReflect\bin\Debug\HtmlReflect.pdb
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\i\HtmlReflect\Debug\HtmlReflect.csprojResolveAssemblyReference.cache
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\i\HtmlReflect\Debug\HtmlReflect.csproj.CoreCompileInputs.cache
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\i\HtmlReflect\Debug\HtmlReflect.dll
-C:\Users\Paulo\Desktop\ISEL\AVE\MovieDbApp\.vs\MovHub\lut\0\i\HtmlReflect\Debug\HtmlReflect.pdb
