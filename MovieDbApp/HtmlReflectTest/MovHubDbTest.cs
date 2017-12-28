@@ -14,9 +14,9 @@ namespace HtmlReflectTest
         public void SearchTest()
         {
             MovieSearchItem expected = new MovieSearchItem();
-            expected.Id = 11;
-            expected.Title = "Star Wars";
-            expected.ReleaseDate = "1977-05-25";
+            expected.Id = 181808;
+            expected.Title = "Star Wars: The Last Jedi";
+            expected.ReleaseDate = "2017-12-13";
             MovieSearchItem[] actual = new TheMovieDbClient().Search("Star Wars", 1);
             Assert.AreEqual(expected.Id, actual[0].Id);
             Assert.AreEqual(expected.Title, actual[0].Title);
@@ -70,8 +70,8 @@ namespace HtmlReflectTest
             expected.Birthday = "1951-09-25";
             expected.Deathday = null;
             expected.PlaceOfBirth = "Concord, California, USA";
-            expected.Biography = "From Wikipedia, the free encyclopedia.\n\nMark Richard Hamill (born September 25, 1951) is an American actor, voice artist, producer, director, and writer. Hamill is best known for his role as Luke Skywalker in the original Star Wars trilogy and also well known for voice-acting characters such as the Joker in various animated series, animated films and video games, beginning with Batman: The Animated Series, the Skeleton king in Super Robot Monkey Team Hyperforce Go!, Fire Lord Ozai in Avatar: The Last Airbender, Master Eraqus in Kingdom Hearts: Birth by Sleep, Skips in Regular Show, and Senator Stampington on Metalocalypse.\n\nDescription above from the Wikipedia article Mark Hamill, licensed under CC-BY-SA, full list of contributors on Wikipedia .";
-            expected.ProfilePath = "/ws544EgE5POxGJqq9LUfhnDrHtV.jpg";
+            expected.Biography = "Mark Richard Hamill (born September 25, 1951) is an American actor, voice artist, producer, director, and writer. Hamill is best known for his role as Luke Skywalker in the original Star Wars trilogy and also well known for voice-acting characters such as the Joker in various animated series, animated films and video games, beginning with Batman: The Animated Series, the Skeleton king in Super Robot Monkey Team Hyperforce Go!, Fire Lord Ozai in Avatar: The Last Airbender, Master Eraqus in Kingdom Hearts: Birth by Sleep, Skips in Regular Show, and Senator Stampington on Metalocalypse.";
+            expected.ProfilePath = "/fk8OfdReNltKZqOk2TZgkofCUFq.jpg";
             Person actual = new TheMovieDbClient().PersonDetais(2);
             Assert.AreEqual(expected.Id, actual.Id);
             Assert.AreEqual(expected.Name, actual.Name);

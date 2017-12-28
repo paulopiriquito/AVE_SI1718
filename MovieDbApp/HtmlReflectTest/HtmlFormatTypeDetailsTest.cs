@@ -18,12 +18,15 @@ namespace HtmlReflectTest
     public class HtmlFormatTypeDetailsTest
     {
         private static Movie movie;
-        private static IEnumerable<string> headers = new string[] { "Budget", "Vote Average" };
-        private static String expectedMovieHtml =
-            "<ul class='list-group'><ul class='list-group'><li class='list-group-item'><strong>OriginalTitle</strong>:Star Wars</li></ul>";
+        private static Person expected;
+        private static IEnumerable<string> headers = new string[] { "Name", "Birthday" };
+        private static string expectedMovieHtml =
+            "<ul class=\'list-group\'><li class=\'list-group-item\'><strong>OriginalTitle</strong>:Star Wars</li>";
         private static MovieSearchItem[] movies;
-        private static String expectedMoviesTypeInTables =
-            "<ul class='list-group'><tr><td>11000000</td><td>8,1</td></tr></ul>";
+        private static string expectedPersonTypeInTables =
+            "<table class=\'table table-hover\'>< thead > < tr ><th>Name</th><th>Birthday</th></tr><thead><tbody><tr><td>Mark Hamill</td><td>1951-09-25</td></tr>";
+
+        private static string expectedForSequenceOf = "<h1>Movie ids</h1><ul><li>11</li></h1>";
         private static HtmlEmit htmlectEmit = new HtmlEmit();
         static HtmlFormatTypeDetailsTest()
         {
@@ -43,6 +46,14 @@ namespace HtmlReflectTest
             item.Title = "Star Wars";
             item.VoteAverage = (float)8.1;
             movies[0] = item;
+            expected = new Person();
+            expected.Id = 2;
+            expected.Name = "Mark Hamill";
+            expected.Birthday = "1951-09-25";
+            expected.Deathday = null;
+            expected.PlaceOfBirth = "Concord, California, USA";
+            expected.Biography = "From Wikipedia, the free encyclopedia.\n\nMark Richard Hamill (born September 25, 1951) is an American actor, voice artist, producer, director, and writer. Hamill is best known for his role as Luke Skywalker in the original Star Wars trilogy and also well known for voice-acting characters such as the Joker in various animated series, animated films and video games, beginning with Batman: The Animated Series, the Skeleton king in Super Robot Monkey Team Hyperforce Go!, Fire Lord Ozai in Avatar: The Last Airbender, Master Eraqus in Kingdom Hearts: Birth by Sleep, Skips in Regular Show, and Senator Stampington on Metalocalypse.\n\nDescription above from the Wikipedia article Mark Hamill, licensed under CC-BY-SA, full list of contributors on Wikipedia .";
+            expected.ProfilePath = "/ws544EgE5POxGJqq9LUfhnDrHtV.jpg";
         }
 
         [TestMethod]
@@ -59,14 +70,14 @@ namespace HtmlReflectTest
         [TestMethod]
         public void HtmlFormatterForTypeInTableTest()
         {
-            htmlectEmit.ForTypeInTable<Movie>(headers, mov =>
+            htmlectEmit.ForTypeInTable<Person>(headers, per =>
             {
                 const string template = "<tr><td>{0}</td><td>{1}</td></tr>";
-                return String.Format(template, mov.Budget, mov.VoteAverage);
+                return String.Format(template, per.Name, per.Birthday);
             });
-            string result = htmlectEmit.ToHtml(movie);
+            string result = htmlectEmit.ToHtml(expected);
             result = Regex.Replace(result, @"\t|\n|\r", "");
-            Assert.AreEqual(expectedMoviesTypeInTables, result);
+            Assert.AreEqual(expectedPersonTypeInTables, result);
         }
 
         [TestMethod]
@@ -79,7 +90,7 @@ namespace HtmlReflectTest
             });
             string result = htmlectEmit.ToHtml(movies);
             result = Regex.Replace(result, @"\t|\n|\r", "");
-            Assert.AreEqual(null, result);
+            Assert.AreEqual(expectedForSequenceOf, result);
         }
 
     }

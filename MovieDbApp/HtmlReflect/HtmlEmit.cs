@@ -213,14 +213,14 @@ namespace HtmlReflect
 		    HtmlFormatterTypes.Add(type, new HtmlFormatObj<T>(transf));
 		    return this;
 	    }
-	    //Returns custom HtmlEmit for type in table html for table headers and first table line //TODO
+	    //Returns custom HtmlEmit for type in table html for table headers and first table line 
 		public HtmlEmit ForTypeInTable<T>(IEnumerable<string> headers, Func<T, string> transf)
 		{
 		    Type type = typeof(T);
-            HtmlFormatterTypes.Add(type, new HtmlFormatObj<T>(transf));
+            HtmlFormatterTypes.Add(type, new HtmlFormatObj<T>(headers, transf));
 			return this;
 		}
-	    //Returns custom HtmlEmit for type list html //TODO
+	    //Returns custom HtmlEmit for type list html 
 		public HtmlEmit ForSequenceOf<T>(Func<IEnumerable<T>, string> transf)
 		{
 		    Type type = typeof(T);
@@ -228,12 +228,19 @@ namespace HtmlReflect
 			return this;
 		}
 
-	    class HtmlFormatObj<T> : IHtmlGetter { //TODO replace HtmlGetter with HtmlFormater and emit code to return the delegate func
+	    class HtmlFormatObj<T> : IHtmlGetter {
 		    private Func<T, string> formatter;
 
+	        private IEnumerable<string> headers;
 		    public HtmlFormatObj(Func<T, string> formatter_param) {
 			    formatter = formatter_param;
 		    }
+
+	        public HtmlFormatObj(IEnumerable<string> headerFields, Func<T, string> formatter_param)
+	        {
+	            headers = headerFields;
+	            formatter = formatter_param;
+	        }
 
 	        public string GetHtml(object obj, string defaultTemplate, bool isTable)
 	        {
@@ -241,7 +248,17 @@ namespace HtmlReflect
 	        }
 
 	        public string GetHtml(object obj) {
-			    return formatter((T) obj);
+                StringBuilder html = new StringBuilder("");
+	            if (headers != null)
+	            {
+	                html.AppendLine("<table class='table table-hover'>\n< thead >\n < tr >");
+	                foreach (string header in headers)
+	                {
+	                    html.AppendLine("<th>" + header + "</th>");
+	                }
+	                html.AppendLine("</tr>\n<thead>\n<tbody>");
+	            }
+			    return html.AppendLine(formatter((T) obj)).ToString();
 		    }
 	    }
 
@@ -271,6 +288,10 @@ namespace HtmlReflect
         {
             IHtmlGetter htmlGetter;
             Type objType = obj.GetType();
+            if (objType.IsArray)
+            {
+                objType = objType.GetElementType();
+            }
             if (!HtmlFormatterTypes.TryGetValue(objType, out htmlGetter))
             {
                 if (!htmlTypes.TryGetValue(objType, out htmlGetter))

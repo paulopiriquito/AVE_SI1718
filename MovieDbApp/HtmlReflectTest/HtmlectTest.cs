@@ -40,14 +40,14 @@ namespace HtmlReflectTest
         public void ToHtmlTest()
         {
             string movieHtml = htmlect.ToHtml(movie);
-            Assert.AreEqual(movieHtml, expectedMovieHtml);
+            Assert.AreEqual(expectedMovieHtml, movieHtml);
         }
 
         [TestMethod]
         public void ToHtmlArrayTest()
         {
             string moviesHtml = htmlect.ToHtml(movies);
-            Assert.AreEqual(expectedMoviesHtml, moviesHtml);
+            Assert.AreEqual(moviesHtml, expectedMoviesHtml);
         }
     }
 }
