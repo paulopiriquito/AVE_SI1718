@@ -41,14 +41,15 @@ namespace HtmlReflect
         private static Dictionary<Type, IHtmlGetter> htmlTypes = new Dictionary<Type, IHtmlGetter>(); //saves an IHtmlGetter for a Type
         private static Dictionary<Type, PropertyInfo[]> TypeProperties = new Dictionary<Type, PropertyInfo[]>(); //saves a PropertyInfo[] for a Type
         private static Dictionary<PropertyInfo, HtmlAs> HtmlAsDict = new Dictionary<PropertyInfo, HtmlAs>(); // saves property HtmlAs attributes
-        private static List<PropertyInfo> HtmlIgnoreList = new List<PropertyInfo>(); // saves property HtmlIgnore attributes
-	    
+        private static List<PropertyInfo> htmlIgnoreList = new List<PropertyInfo>(); // saves property HtmlIgnore attributes
+        private static Dictionary<Type, IHtmlGetter> HtmlFormatterTypes = new Dictionary<Type, IHtmlGetter>(); //saves an IHtmlGetter for a Type
+
         //Inits HtmlIgnoreList and HtmlAsDict for a set of PropertyInfo to prevent repeated reflection on getting property attributes
         private static void HtmlAttributes_init(PropertyInfo[] properties)
         {
             foreach (var property in properties)
             {
-                if (!HtmlIgnoreList.Contains(property) && !HtmlAsDict.ContainsKey(property))
+                if (!htmlIgnoreList.Contains(property) && !HtmlAsDict.ContainsKey(property))
                 {
                     HtmlIgnore ignore = (HtmlIgnore)property.GetCustomAttribute(typeof(HtmlIgnore));
                     if (ignore == null)
@@ -60,7 +61,7 @@ namespace HtmlReflect
                         }
                     }
                     else
-                        HtmlIgnoreList.Add(property);
+                        htmlIgnoreList.Add(property);
                 }
             }
         }
@@ -94,15 +95,10 @@ namespace HtmlReflect
             assemblyBuilder.Save(assemblyName.Name + ".dll");
             return (IHtmlGetter)Activator.CreateInstance(t, new object[] { this });
         }
+
         public static void EmitCtor(Type klass, TypeBuilder typeBuilder)
         {
             Type[] parameterTypes = { typeof(HtmlEmit) };
-
-            /*ConstructorBuilder ctor = typeBuilder.DefineConstructor(
-                MethodAttributes.Public,
-                CallingConventions.Standard,
-                parameterTypes);*/
-            ConstructorInfo objCtor = typeof(HtmlGetter).GetConstructor(parameterTypes);
 
             ConstructorBuilder ctor = typeBuilder.DefineConstructor(
                 MethodAttributes.Public,
@@ -111,7 +107,6 @@ namespace HtmlReflect
 
             ILGenerator il = ctor.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Call, objCtor);
             il.Emit(OpCodes.Ldarg_1);
             il.Emit(OpCodes.Call, typeof(HtmlGetter).GetConstructor(parameterTypes));
             il.Emit(OpCodes.Ret);
@@ -140,8 +135,9 @@ namespace HtmlReflect
 
             foreach (PropertyInfo propertyInfo in propertyInfoArray)
             {
-                if (HtmlIgnoreList.Contains(propertyInfo)) continue;
+                if (htmlIgnoreList.Contains(propertyInfo)) continue;
 
+                il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldstr, propertyInfo.Name); // push on stack the property name
                 il.Emit(OpCodes.Ldloc, target); // ldloc target
                 il.Emit(OpCodes.Call, propertyInfo.GetGetMethod()); //push on stack the property value
@@ -169,7 +165,13 @@ namespace HtmlReflect
         //Returns html of object in list style
         public string ToHtml(object source)
         {
-            StringBuilder html = new StringBuilder("<ul class=\'list-group\'>\n");
+            Type objType = source.GetType();
+            StringBuilder html = new StringBuilder("");
+            if (HtmlFormatterTypes.ContainsKey(objType))
+            {
+                return html.AppendLine(ObjPropertiesToHtml(source,null, false)).ToString();
+            }
+            html.AppendLine("<ul class=\'list-group\'>\n");
             html.AppendLine(ObjPropertiesToHtml(source, "<li class=\'list-group-item\'><strong>{name}</strong>: {value}</li>", false));
             return html.AppendLine("</ul>").ToString();
         }
@@ -177,16 +179,21 @@ namespace HtmlReflect
         //Returns html of object array in table style
         public string ToHtml<T>(IEnumerable<T> arr)
         {
-            StringBuilder html = new StringBuilder("<table class='table table-hover'>\n");
+            StringBuilder html = new StringBuilder("");
+            if (HtmlFormatterTypes.ContainsKey(typeof(T)))
+            {
+                return html.AppendLine(ObjPropertiesToHtml(arr, null, false)).ToString();
+            }
+            html.AppendLine("<table class='table table-hover'>\n");
 
             //fill table header
             html.AppendLine("<thead>\n<tr>");
             
-            PropertyInfo[] properties = GetPropertyInfoArray(arr.GetType().GetElementType());
+            PropertyInfo[] properties = GetPropertyInfoArray(typeof(T));
             HtmlAttributes_init(properties);
             
             foreach (var property in properties)
-                if (!HtmlIgnoreList.Contains(property))
+                if (!htmlIgnoreList.Contains(property))
                     html.AppendLine("<th>" + property.Name + "</th>");
 
             html.AppendLine("</tr>\n<thead>\n<tbody>");
@@ -203,21 +210,21 @@ namespace HtmlReflect
 		//Returns custom HtmlEmit for type details html
 	    public HtmlEmit ForTypeDetails<T>(Func<T, string> transf) {
 		    Type type = typeof(T);
-		    htmlTypes.Add(type, new HtmlFormatObj<T>(transf));
+		    HtmlFormatterTypes.Add(type, new HtmlFormatObj<T>(transf));
 		    return this;
 	    }
 	    //Returns custom HtmlEmit for type in table html for table headers and first table line //TODO
 		public HtmlEmit ForTypeInTable<T>(IEnumerable<string> headers, Func<T, string> transf)
 		{
 		    Type type = typeof(T);
-            htmlTypes.Add(type, new HtmlFormatObj<T>(transf));
+            HtmlFormatterTypes.Add(type, new HtmlFormatObj<T>(transf));
 			return this;
 		}
 	    //Returns custom HtmlEmit for type list html //TODO
 		public HtmlEmit ForSequenceOf<T>(Func<IEnumerable<T>, string> transf)
 		{
 		    Type type = typeof(T);
-            htmlTypes.Add(type, new HtmlFormatEnum<T>(transf));
+            HtmlFormatterTypes.Add(type, new HtmlFormatEnum<T>(transf));
 			return this;
 		}
 
@@ -264,10 +271,13 @@ namespace HtmlReflect
         {
             IHtmlGetter htmlGetter;
             Type objType = obj.GetType();
-            if (!htmlTypes.TryGetValue(objType, out htmlGetter))
+            if (!HtmlFormatterTypes.TryGetValue(objType, out htmlGetter))
             {
-                htmlGetter = EmitHtmlGetter(objType);
-                htmlTypes.Add(objType, htmlGetter);
+                if (!htmlTypes.TryGetValue(objType, out htmlGetter))
+                {
+                    htmlGetter = EmitHtmlGetter(objType);
+                    htmlTypes.Add(objType, htmlGetter);
+                }
             }
             return htmlGetter.GetHtml(obj, defaultTemplate, isTable);
         }
